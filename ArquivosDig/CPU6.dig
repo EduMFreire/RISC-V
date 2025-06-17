@@ -49,21 +49,14 @@ architecture behavioral of register_file is
 
 begin
 
-    -- Reset Process: Asynchronous reset to clear all registers
-    reset_proc: process(reset)
+    -- Read Process: Synchronous to the rising edge (first half of the clock)
+    read_proc: process(clk, reset)
     begin
         if reset = &apos;1&apos; then
-            -- Clear all registers to zero on reset
-            for i in 0 to 31 loop
-                registers(i) &lt;= (others =&gt; &apos;0&apos;);
-            end loop;
-        end if;
-    end process reset_proc;
-
-    -- Read Process: Synchronous to the rising edge (first half of the clock)
-    read_proc: process(clk)
-    begin
-        if rising_edge(clk) then
+            -- On reset, clear output data
+            rs1_data &lt;= (others =&gt; &apos;0&apos;);
+            rs2_data &lt;= (others =&gt; &apos;0&apos;);
+        elsif rising_edge(clk) then
             -- Read rs1. Reading x0 always returns zero.
             if rs1_addr = &quot;00000&quot; then
                 rs1_data &lt;= (others =&gt; &apos;0&apos;);
@@ -81,9 +74,14 @@ begin
     end process read_proc;
 
     -- Write Process: Synchronous to the falling edge (second half of the clock)
-    write_proc: process(clk)
+    write_proc: process(clk, reset)
     begin
-        if falling_edge(clk) then
+        if reset = &apos;1&apos; then
+            -- On reset, clear all registers
+            for i in 0 to 31 loop
+                registers(i) &lt;= (others =&gt; &apos;0&apos;);
+            end loop;
+        elsif falling_edge(clk) then
             -- Write only if reg_write is enabled and the destination is not x0
             if reg_write = &apos;1&apos; and rd_addr /= &quot;00000&quot; then
                 registers(to_integer(unsigned(rd_addr))) &lt;= rd_data;
@@ -1207,7 +1205,7 @@ end Behavioral;</string>
         </entry>
         <entry>
           <string>Data</string>
-          <data>108093,108093,6*0,2000ef</data>
+          <data>108093,108093,0,0,108093,108093,0,0,2000ef</data>
         </entry>
       </elementAttributes>
       <pos x="-500" y="160"/>
@@ -2284,31 +2282,7 @@ end Behavioral;</string>
           <int>32</int>
         </entry>
       </elementAttributes>
-      <pos x="1760" y="400"/>
-    </visualElement>
-    <visualElement>
-      <elementName>Tunnel</elementName>
-      <elementAttributes>
-        <entry>
-          <string>NetName</string>
-          <string>clk</string>
-        </entry>
-      </elementAttributes>
-      <pos x="1860" y="500"/>
-    </visualElement>
-    <visualElement>
-      <elementName>Tunnel</elementName>
-      <elementAttributes>
-        <entry>
-          <string>rotation</string>
-          <rotation rotation="2"/>
-        </entry>
-        <entry>
-          <string>NetName</string>
-          <string>reset</string>
-        </entry>
-      </elementAttributes>
-      <pos x="1640" y="380"/>
+      <pos x="1760" y="380"/>
     </visualElement>
     <visualElement>
       <elementName>adder.dig</elementName>
@@ -2578,10 +2552,6 @@ end Behavioral;</string>
       <p2 x="1880" y="420"/>
     </wire>
     <wire>
-      <p1 x="400" y="420"/>
-      <p2 x="460" y="420"/>
-    </wire>
-    <wire>
       <p1 x="-680" y="-40"/>
       <p2 x="-660" y="-40"/>
     </wire>
@@ -2714,10 +2684,6 @@ end Behavioral;</string>
       <p2 x="1740" y="440"/>
     </wire>
     <wire>
-      <p1 x="1800" y="440"/>
-      <p2 x="1880" y="440"/>
-    </wire>
-    <wire>
       <p1 x="2960" y="440"/>
       <p2 x="3100" y="440"/>
     </wire>
@@ -2747,7 +2713,7 @@ end Behavioral;</string>
     </wire>
     <wire>
       <p1 x="3680" y="320"/>
-      <p2 x="3740" y="320"/>
+      <p2 x="3720" y="320"/>
     </wire>
     <wire>
       <p1 x="2660" y="320"/>
@@ -2776,6 +2742,10 @@ end Behavioral;</string>
     <wire>
       <p1 x="1080" y="320"/>
       <p2 x="1200" y="320"/>
+    </wire>
+    <wire>
+      <p1 x="3720" y="320"/>
+      <p2 x="3740" y="320"/>
     </wire>
     <wire>
       <p1 x="380" y="580"/>
@@ -2868,10 +2838,6 @@ end Behavioral;</string>
     <wire>
       <p1 x="1500" y="460"/>
       <p2 x="1700" y="460"/>
-    </wire>
-    <wire>
-      <p1 x="1840" y="460"/>
-      <p2 x="1880" y="460"/>
     </wire>
     <wire>
       <p1 x="1780" y="460"/>
@@ -2986,10 +2952,6 @@ end Behavioral;</string>
       <p2 x="1120" y="860"/>
     </wire>
     <wire>
-      <p1 x="460" y="480"/>
-      <p2 x="620" y="480"/>
-    </wire>
-    <wire>
       <p1 x="3160" y="480"/>
       <p2 x="3240" y="480"/>
     </wire>
@@ -3012,6 +2974,10 @@ end Behavioral;</string>
     <wire>
       <p1 x="1680" y="480"/>
       <p2 x="1760" y="480"/>
+    </wire>
+    <wire>
+      <p1 x="540" y="480"/>
+      <p2 x="620" y="480"/>
     </wire>
     <wire>
       <p1 x="380" y="480"/>
@@ -3076,6 +3042,10 @@ end Behavioral;</string>
     <wire>
       <p1 x="1760" y="360"/>
       <p2 x="2100" y="360"/>
+    </wire>
+    <wire>
+      <p1 x="540" y="1000"/>
+      <p2 x="3720" y="1000"/>
     </wire>
     <wire>
       <p1 x="420" y="620"/>
@@ -3190,12 +3160,8 @@ end Behavioral;</string>
       <p2 x="2260" y="380"/>
     </wire>
     <wire>
-      <p1 x="1860" y="380"/>
+      <p1 x="1840" y="380"/>
       <p2 x="1880" y="380"/>
-    </wire>
-    <wire>
-      <p1 x="1640" y="380"/>
-      <p2 x="1800" y="380"/>
     </wire>
     <wire>
       <p1 x="520" y="1020"/>
@@ -3250,16 +3216,12 @@ end Behavioral;</string>
       <p2 x="3720" y="100"/>
     </wire>
     <wire>
+      <p1 x="3720" y="320"/>
+      <p2 x="3720" y="1000"/>
+    </wire>
+    <wire>
       <p1 x="1160" y="500"/>
       <p2 x="1160" y="620"/>
-    </wire>
-    <wire>
-      <p1 x="1800" y="420"/>
-      <p2 x="1800" y="440"/>
-    </wire>
-    <wire>
-      <p1 x="1800" y="380"/>
-      <p2 x="1800" y="400"/>
     </wire>
     <wire>
       <p1 x="780" y="20"/>
@@ -3336,6 +3298,10 @@ end Behavioral;</string>
     <wire>
       <p1 x="1820" y="180"/>
       <p2 x="1820" y="460"/>
+    </wire>
+    <wire>
+      <p1 x="540" y="480"/>
+      <p2 x="540" y="1000"/>
     </wire>
     <wire>
       <p1 x="-160" y="300"/>
@@ -3418,12 +3384,12 @@ end Behavioral;</string>
       <p2 x="1200" y="660"/>
     </wire>
     <wire>
-      <p1 x="1840" y="460"/>
-      <p2 x="1840" y="640"/>
+      <p1 x="1840" y="320"/>
+      <p2 x="1840" y="380"/>
     </wire>
     <wire>
-      <p1 x="1840" y="320"/>
-      <p2 x="1840" y="420"/>
+      <p1 x="1840" y="420"/>
+      <p2 x="1840" y="640"/>
     </wire>
     <wire>
       <p1 x="-180" y="320"/>
@@ -3506,16 +3472,8 @@ end Behavioral;</string>
       <p2 x="580" y="540"/>
     </wire>
     <wire>
-      <p1 x="1860" y="380"/>
-      <p2 x="1860" y="500"/>
-    </wire>
-    <wire>
       <p1 x="2120" y="340"/>
       <p2 x="2120" y="400"/>
-    </wire>
-    <wire>
-      <p1 x="460" y="420"/>
-      <p2 x="460" y="480"/>
     </wire>
     <wire>
       <p1 x="1100" y="460"/>
@@ -3590,7 +3548,7 @@ end Behavioral;</string>
       <p2 x="1120" y="860"/>
     </wire>
     <wire>
-      <p1 x="1760" y="440"/>
+      <p1 x="1760" y="420"/>
       <p2 x="1760" y="480"/>
     </wire>
     <wire>
@@ -3599,7 +3557,7 @@ end Behavioral;</string>
     </wire>
     <wire>
       <p1 x="1760" y="360"/>
-      <p2 x="1760" y="400"/>
+      <p2 x="1760" y="380"/>
     </wire>
     <wire>
       <p1 x="1760" y="480"/>
@@ -3670,7 +3628,7 @@ end Behavioral;</string>
       <p2 x="3060" y="520"/>
     </wire>
     <wire>
-      <p1 x="1780" y="440"/>
+      <p1 x="1780" y="420"/>
       <p2 x="1780" y="460"/>
     </wire>
     <wire>

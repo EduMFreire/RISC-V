@@ -23,21 +23,14 @@ architecture behavioral of register_file is
 
 begin
 
-    -- Reset Process: Asynchronous reset to clear all registers
-    reset_proc: process(reset)
+    -- Read Process: Synchronous to the rising edge (first half of the clock)
+    read_proc: process(clk, reset)
     begin
         if reset = '1' then
-            -- Clear all registers to zero on reset
-            for i in 0 to 31 loop
-                registers(i) <= (others => '0');
-            end loop;
-        end if;
-    end process reset_proc;
-
-    -- Read Process: Synchronous to the rising edge (first half of the clock)
-    read_proc: process(clk)
-    begin
-        if rising_edge(clk) then
+            -- On reset, clear output data
+            rs1_data <= (others => '0');
+            rs2_data <= (others => '0');
+        elsif rising_edge(clk) then
             -- Read rs1. Reading x0 always returns zero.
             if rs1_addr = "00000" then
                 rs1_data <= (others => '0');
@@ -55,9 +48,14 @@ begin
     end process read_proc;
 
     -- Write Process: Synchronous to the falling edge (second half of the clock)
-    write_proc: process(clk)
+    write_proc: process(clk, reset)
     begin
-        if falling_edge(clk) then
+        if reset = '1' then
+            -- On reset, clear all registers
+            for i in 0 to 31 loop
+                registers(i) <= (others => '0');
+            end loop;
+        elsif falling_edge(clk) then
             -- Write only if reg_write is enabled and the destination is not x0
             if reg_write = '1' and rd_addr /= "00000" then
                 registers(to_integer(unsigned(rd_addr))) <= rd_data;

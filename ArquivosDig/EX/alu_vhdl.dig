@@ -12,11 +12,11 @@
         </entry>
         <entry>
           <string>Label</string>
-          <string>alu</string>
+          <string>alu_combinational</string>
         </entry>
         <entry>
           <string>externalInputs</string>
-          <string>clk,reset,a_in:32,b_in:32,c_in:4</string>
+          <string>a_in:32,b_in:32,c_in:4</string>
         </entry>
         <entry>
           <string>Code</string>
@@ -24,59 +24,63 @@
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
-entity alu is
+entity alu_combinational is
     Port (
-	clk           : in  std_logic;
-        reset         : in  std_logic;
-        a_in           : in  std_logic_vector(31 downto 0);
-        b_in           : in std_logic_vector(31 downto 0);
-	c_in		: in std_logic_vector(3 downto 0);
-	result_out	: out std_logic_vector(31 downto 0);
-	zero_flag_out	: out std_logic
+        a_in            : in  std_logic_vector(31 downto 0);
+        b_in            : in  std_logic_vector(31 downto 0);
+        c_in            : in  std_logic_vector(3 downto 0);
+        result_out      : out std_logic_vector(31 downto 0);
+        zero_flag_out   : out std_logic
     );
-end alu;
+end alu_combinational;
 
-architecture Behavioral of alu is
+architecture Behavioral of alu_combinational is
+
+constant ALL_ZEROS_32 : std_logic_vector(31 downto 0) := (others =&gt; &apos;0&apos;);
+
 begin
-  process(clk, reset)
-	variable temp : std_logic_vector(31 downto 0);
-	variable temp2 : std_logic_vector(31 downto 0);
-  begin
-    if reset = &apos;1&apos; then
-        result_out &lt;= (others =&gt; &apos;0&apos;);
-	zero_flag_out &lt;= &apos;0&apos;;
-    elsif rising_edge(clk) then
-	temp  := (others =&gt; &apos;0&apos;);
-	temp2 := std_logic_vector(to_unsigned(0,32));
-	case c_in is
-		when &quot;0000&quot; =&gt;
-			temp := a_in and b_in;
-		when &quot;0001&quot; =&gt;
-			temp := a_in or b_in;
-		when &quot;0011&quot; =&gt;
-			temp := a_in xor b_in;
-		when &quot;0010&quot; =&gt;
-			temp := std_logic_vector(unsigned(a_in) + unsigned(b_in));
-		when &quot;0110&quot; =&gt;
-			temp := std_logic_vector(signed(unsigned(a_in) - unsigned(b_in)));
-		when &quot;0100&quot; =&gt;
-			temp :=	std_logic_vector(shift_left(unsigned(a_in), to_integer(unsigned(b_in(4 downto 0)))));
-		when &quot;0101&quot; =&gt;
-			temp :=	std_logic_vector(shift_right(unsigned(a_in), to_integer(unsigned(b_in(4 downto 0)))));
-		when others =&gt;
-			temp := (others =&gt; &apos;0&apos;);
-	end case;
-	
-	result_out &lt;= temp;
-	
-	if temp=temp2 then
-    		zero_flag_out &lt;= &apos;1&apos;;
-	else
-    		zero_flag_out &lt;= &apos;0&apos;;
-	end if;
-	
-    end if;
-  end process;
+
+    process(a_in, b_in, c_in)
+        variable temp_result : std_logic_vector(31 downto 0);
+    begin
+        -- Initialize temp_result for safety (though not strictly necessary for full case coverage)
+        temp_result := (others =&gt; &apos;0&apos;);
+
+        case c_in is
+            when &quot;0000&quot; =&gt;
+                temp_result := a_in and b_in;
+            when &quot;0001&quot; =&gt;
+                temp_result := a_in or b_in;
+            when &quot;0011&quot; =&gt;
+                temp_result := a_in xor b_in;
+            when &quot;0010&quot; =&gt;
+                temp_result := std_logic_vector(unsigned(a_in) + unsigned(b_in));
+            when &quot;0110&quot; =&gt;
+                -- For subtraction, ensure both operands are treated as unsigned for consistent arithmetic.
+                -- If signed subtraction is intended, use signed types for both a_in and b_in.
+                temp_result := std_logic_vector(unsigned(a_in) - unsigned(b_in));
+            when &quot;0100&quot; =&gt;
+                -- For shift operations, the shift amount should be an integer,
+                -- and using &apos;unsigned&apos; directly on the slice ensures proper conversion.
+                temp_result := std_logic_vector(shift_left(unsigned(a_in), to_integer(unsigned(b_in(4 downto 0)))));
+            when &quot;0101&quot; =&gt;
+                temp_result := std_logic_vector(shift_right(unsigned(a_in), to_integer(unsigned(b_in(4 downto 0)))));
+            when others =&gt;
+                temp_result := (others =&gt; &apos;0&apos;); -- Default or undefined operation
+        end case;
+
+        -- Assign the calculated temporary result to the output signal
+        result_out &lt;= temp_result;
+
+        -- Determine the zero flag based on the calculated result
+        if temp_result = ALL_ZEROS_32 then
+            zero_flag_out &lt;= &apos;1&apos;;
+        else
+            zero_flag_out &lt;= &apos;0&apos;;
+        end if;
+
+    end process;
+
 end Behavioral;</string>
         </entry>
         <entry>
@@ -109,26 +113,6 @@ end Behavioral;</string>
       <elementAttributes>
         <entry>
           <string>Label</string>
-          <string>clk</string>
-        </entry>
-      </elementAttributes>
-      <pos x="500" y="360"/>
-    </visualElement>
-    <visualElement>
-      <elementName>In</elementName>
-      <elementAttributes>
-        <entry>
-          <string>Label</string>
-          <string>reset</string>
-        </entry>
-      </elementAttributes>
-      <pos x="540" y="300"/>
-    </visualElement>
-    <visualElement>
-      <elementName>In</elementName>
-      <elementAttributes>
-        <entry>
-          <string>Label</string>
           <string>a</string>
         </entry>
         <entry>
@@ -136,7 +120,7 @@ end Behavioral;</string>
           <int>32</int>
         </entry>
       </elementAttributes>
-      <pos x="380" y="380"/>
+      <pos x="340" y="360"/>
     </visualElement>
     <visualElement>
       <elementName>In</elementName>
@@ -150,7 +134,7 @@ end Behavioral;</string>
           <int>32</int>
         </entry>
       </elementAttributes>
-      <pos x="340" y="460"/>
+      <pos x="280" y="380"/>
     </visualElement>
     <visualElement>
       <elementName>In</elementName>
@@ -164,7 +148,7 @@ end Behavioral;</string>
           <int>4</int>
         </entry>
       </elementAttributes>
-      <pos x="380" y="580"/>
+      <pos x="340" y="400"/>
     </visualElement>
     <visualElement>
       <elementName>Out</elementName>
@@ -179,80 +163,28 @@ end Behavioral;</string>
   </visualElements>
   <wires>
     <wire>
-      <p1 x="440" y="400"/>
+      <p1 x="340" y="400"/>
       <p2 x="580" y="400"/>
-    </wire>
-    <wire>
-      <p1 x="440" y="480"/>
-      <p2 x="560" y="480"/>
-    </wire>
-    <wire>
-      <p1 x="540" y="420"/>
-      <p2 x="580" y="420"/>
-    </wire>
-    <wire>
-      <p1 x="380" y="580"/>
-      <p2 x="440" y="580"/>
-    </wire>
-    <wire>
-      <p1 x="500" y="360"/>
-      <p2 x="580" y="360"/>
     </wire>
     <wire>
       <p1 x="760" y="360"/>
       <p2 x="860" y="360"/>
     </wire>
     <wire>
-      <p1 x="440" y="440"/>
-      <p2 x="540" y="440"/>
-    </wire>
-    <wire>
-      <p1 x="560" y="440"/>
-      <p2 x="580" y="440"/>
+      <p1 x="340" y="360"/>
+      <p2 x="580" y="360"/>
     </wire>
     <wire>
       <p1 x="780" y="520"/>
       <p2 x="900" y="520"/>
     </wire>
     <wire>
-      <p1 x="540" y="380"/>
-      <p2 x="580" y="380"/>
-    </wire>
-    <wire>
       <p1 x="760" y="380"/>
       <p2 x="780" y="380"/>
     </wire>
     <wire>
-      <p1 x="380" y="380"/>
-      <p2 x="440" y="380"/>
-    </wire>
-    <wire>
-      <p1 x="340" y="460"/>
-      <p2 x="440" y="460"/>
-    </wire>
-    <wire>
-      <p1 x="560" y="440"/>
-      <p2 x="560" y="480"/>
-    </wire>
-    <wire>
-      <p1 x="440" y="480"/>
-      <p2 x="440" y="580"/>
-    </wire>
-    <wire>
-      <p1 x="440" y="440"/>
-      <p2 x="440" y="460"/>
-    </wire>
-    <wire>
-      <p1 x="440" y="380"/>
-      <p2 x="440" y="400"/>
-    </wire>
-    <wire>
-      <p1 x="540" y="300"/>
-      <p2 x="540" y="380"/>
-    </wire>
-    <wire>
-      <p1 x="540" y="420"/>
-      <p2 x="540" y="440"/>
+      <p1 x="280" y="380"/>
+      <p2 x="580" y="380"/>
     </wire>
     <wire>
       <p1 x="780" y="380"/>
