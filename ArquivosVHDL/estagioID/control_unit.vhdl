@@ -8,20 +8,20 @@ entity control_unit is
 
         -- Outputs: Control signals for the datapath
         alu_op      : out std_logic_vector(1 downto 0); -- Controls the ALU's main operation:
-                                                  -- "00" = Add (for Loads/Stores/AUIPC/LUI/JAL/JALR address calc or pass-through)
-                                                  -- "01" = Subtract (for Branches for comparison)
-                                                  -- "10" = R-type operation (further decoded by funct3/funct7)
-                                                  -- "11" = I-type operation (further decoded by funct3)
-        alu_src     : out std_logic;              -- Selects the second ALU source:
-                                                  -- '0' = rs2 data (for R-type)
-                                                  -- '1' = immediate (for I, S, B, U, J-types)
-        mem_read    : out std_logic;              -- Enables reading from data memory
-        mem_write   : out std_logic;              -- Enables writing to data memory
-        mem_to_reg  : out std_logic;              -- Selects if data from memory goes to the register file (for loads)
-        reg_write   : out std_logic;              -- Enable writing to the register file
-        branch      : out std_logic;              -- Indicates a conditional branch instruction
-        jump        : out std_logic              -- Indicates an unconditional jump instruction (JAL, JALR)
-
+                                                        -- "00" = Add (for Loads/Stores/AUIPC/LUI/JAL/JALR address calc or pass-through)
+                                                        -- "01" = Subtract (for Branches for comparison)
+                                                        -- "10" = R-type operation (further decoded by funct3/funct7)
+                                                        -- "11" = I-type operation (further decoded by funct3)
+        alu_src     : out std_logic;                    -- Selects the second ALU source:
+                                                        -- '0' = rs2 data (for R-type)
+                                                        -- '1' = immediate (for I, S, B, U, J-types)
+        mem_read    : out std_logic;                    -- Enables reading from data memory
+        mem_write   : out std_logic;                    -- Enables writing to data memory
+        mem_to_reg  : out std_logic;                    -- Selects if data from memory goes to the register file (for loads)
+        reg_write   : out std_logic;                    -- Enable writing to the register file
+        branch      : out std_logic;                    -- Indicates a conditional branch instruction (for enabling branch logic)
+        jump        : out std_logic;                    -- Indicates an unconditional jump instruction (JAL, JALR)
+        pc_sel      : out std_logic                     -- Selects next PC: '0' = PC+4, '1' = Branch/Jump Target
     );
 end entity control_unit;
 
@@ -40,7 +40,7 @@ architecture behavioral of control_unit is
 begin
 
     -- Main control logic process.
-    -- This process is sensitive to both 'reset' and 'opcode'.
+    -- This process is sensitive to 'opcode'.
     -- All output signals must be assigned within this single process to avoid latches.
     process(opcode)
     begin
@@ -52,80 +52,72 @@ begin
         alu_src    <= '0';
         branch     <= '0';
         jump       <= '0';
+        pc_sel     <= '0'; -- Default to PC+4
         alu_op     <= "00"; -- Default to "00" (Add/Pass-through) for ALU
 
         -- Use a case statement to decode the opcode and assert specific control signals.
         case opcode is
             -- R-Type instructions (e.g., ADD, SUB, AND, OR)
-            -- Perform register-to-register operations, write result back to register file.
             when R_TYPE_OP =>
-                reg_write  <= '1';     -- Enable write to register file
-                alu_src    <= '0';     -- Second ALU operand comes from rs2 (register value)
-                alu_op     <= "10";    -- ALU performs R-type specific operation (decoded by ALU Control)
+                reg_write  <= '1';
+                alu_src    <= '0';
+                alu_op     <= "10";
 
             -- I-Type instructions (Arithmetic/Logical with Immediate, excluding Loads/JALR)
-            -- (e.g., ADDI, ANDI, ORI)
-            -- Perform operation with immediate, write result back to register file.
             when I_TYPE_OP =>
-                reg_write  <= '1';     -- Enable write to register file
-                alu_src    <= '1';     -- Second ALU operand comes from immediate
-                alu_op     <= "11";    -- ALU performs I-type specific operation (decoded by ALU Control)
+                reg_write  <= '1';
+                alu_src    <= '1';
+                alu_op     <= "11";
 
             -- Load instructions (I-type, e.g., LW)
-            -- Calculate memory address using immediate, read from memory, write to register file.
             when L_TYPE_OP =>
-                reg_write  <= '1';     -- Enable write to register file
-                mem_to_reg <= '1';     -- Data from memory is written to reg file
-                mem_read   <= '1';     -- Enable memory read
-                alu_src    <= '1';     -- Second ALU operand is immediate (for address calculation)
-                alu_op     <= "00";    -- ALU performs addition (base register + immediate offset)
+                reg_write  <= '1';
+                mem_to_reg <= '1';
+                mem_read   <= '1';
+                alu_src    <= '1';
+                alu_op     <= "00";
 
             -- Store instructions (S-type, e.g., SW)
-            -- Calculate memory address using immediate, write to memory.
             when S_TYPE_OP =>
-                mem_write  <= '1';     -- Enable memory write
-                alu_src    <= '1';     -- Second ALU operand is immediate (for address calculation)
-                alu_op     <= "00";    -- ALU performs addition (base register + immediate offset)
+                mem_write  <= '1';
+                alu_src    <= '1';
+                alu_op     <= "00";
 
             -- Branch instructions (B-type, e.g., BEQ, BNE)
-            -- Compare two registers, enable branch if condition met.
             when B_TYPE_OP =>
-                branch     <= '1';     -- Indicate a branch instruction
-                alu_op     <= "01";    -- ALU performs subtraction (for comparison)
+                branch     <= '1';    -- This signal enables the branch comparison logic
+                pc_sel     <= '1';    -- Take jump target (maybe)
+                alu_op     <= "01";   -- ALU performs subtraction (for comparison)
 
             -- LUI (Load Upper Immediate)
-            -- Loads a 20-bit immediate into the upper 20 bits of a register, clearing lower 12.
             when LUI_OP =>
-                reg_write  <= '1';     -- Enable write to register file
-                alu_src    <= '1';     -- Immediate is used by ALU (often conceptually for a pass-through or add 0)
-                alu_op     <= "00";    -- ALU performs addition (effectively passes the immediate)
+                reg_write  <= '1';
+                alu_src    <= '1';
+                alu_op     <= "00";
 
             -- AUIPC (Add Upper Immediate to PC)
-            -- Adds a 20-bit immediate (shifted) to the PC, writes to register.
             when AUIPC_OP =>
-                reg_write  <= '1';     -- Enable write to register file
-                alu_src    <= '1';     -- Immediate is used by ALU
-                alu_op     <= "00";    -- ALU performs addition (PC + immediate)
+                reg_write  <= '1';
+                alu_src    <= '1';
+                alu_op     <= "00";
 
             -- JAL (Jump and Link)
-            -- Unconditional jump, saves PC+4 to rd.
             when JAL_OP =>
-                reg_write  <= '1';     -- Enable write to register file (for PC+4)
-                jump       <= '1';     -- Indicate an unconditional jump
-                alu_op     <= "00";    -- ALU may be used to calculate target address (PC + immediate) or pass PC+4
+                reg_write  <= '1';
+                jump       <= '1';    -- This signal indicates an unconditional jump
+                pc_sel     <= '1';    -- Take jump target 
+                alu_op     <= "00";   -- ALU may be used to calculate target address (PC + immediate) or pass PC+4
 
             -- JALR (Jump and Link Register)
-            -- Unconditional jump to (rs1 + immediate), saves PC+4 to rd.
             when JALR_OP =>
-                reg_write  <= '1';     -- Enable write to register file (for PC+4)
-                jump       <= '1';     -- Indicate an unconditional jump
-                alu_src    <= '1';     -- Immediate is used by ALU (for address calculation)
-                alu_op     <= "00";    -- ALU performs addition (rs1 + immediate)
+                reg_write  <= '1';
+                jump       <= '1';    -- This signal indicates an unconditional jump
+                pc_sel     <= '1';    -- Take jump target 
+                alu_src    <= '1';    -- Immediate is used by ALU (for address calculation)
+                alu_op     <= "00";   -- ALU performs addition (rs1 + immediate)
 
-            -- Default case for any other undefined or unsupported opcodes.
-            -- All control signals remain in their default inactive state.
             when others =>
-                null; -- Explicitly do nothing, as defaults are set above.
+                null;
         end case;
     end process;
 
