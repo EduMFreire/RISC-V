@@ -537,7 +537,7 @@ end architecture behavioral;</string>
         </entry>
         <entry>
           <string>externalInputs</string>
-          <string>clk,reset,ALUOp_in:2,ALUSrc_in,memRead_in,memWrite_in,memToReg_in,regWrite_in,branch_in,jump_in,Rs1_data_in:32,Rs2_data_in:32,Imm_in:32,Rs1_in:5,Rs2_in:5,Rd_in:5,PC_in:32,funct_3_in:3,funct_7_in:7,bubble</string>
+          <string>clk,reset,ALUOp_in:2,ALUSrc_in,memRead_in,memWrite_in,memToReg_in,regWrite_in,Rs1_data_in:32,Rs2_data_in:32,Imm_in:32,Rs1_in:5,Rs2_in:5,Rd_in:5,funct_3_in:3,funct_7_in:7,bubble</string>
         </entry>
         <entry>
           <string>Code</string>
@@ -557,8 +557,6 @@ entity ID_EX_Pipeline is
         memWrite_in  : in  std_logic;
         memToReg_in  : in  std_logic;
         regWrite_in  : in  std_logic;
-        branch_in    : in  std_logic;
-        jump_in      : in  std_logic;
         -- Data signals
         Rs1_data_in  : in  std_logic_vector(31 downto 0);
         Rs2_data_in  : in  std_logic_vector(31 downto 0);
@@ -566,7 +564,6 @@ entity ID_EX_Pipeline is
         Rs1_in         : in  std_logic_vector(4 downto 0);
         Rs2_in         : in  std_logic_vector(4 downto 0);
         Rd_in         : in  std_logic_vector(4 downto 0);
-        PC_in         : in std_logic_vector(31 downto 0);
         funct_3_in      : in  std_logic_vector(2 downto 0);
         funct_7_in      : in  std_logic_vector(6 downto 0); 
         
@@ -579,8 +576,6 @@ entity ID_EX_Pipeline is
         memWrite_out  : out std_logic;
         memToReg_out  : out std_logic;
         regWrite_out  : out std_logic;
-        branch_out    : out std_logic;
-        jump_out      : out std_logic;
         -- Data outputs
         Rs1_data_out       : out std_logic_vector(31 downto 0);
         Rs2_data_out       : out std_logic_vector(31 downto 0);
@@ -588,7 +583,6 @@ entity ID_EX_Pipeline is
         Rs1_out       : out std_logic_vector(4 downto 0);
         Rs2_out       : out std_logic_vector(4 downto 0);
         Rd_out        : out std_logic_vector(4 downto 0);
-        PC_out        : out std_logic_vector(31 downto 0);
         funct_3_out     : out  std_logic_vector(2 downto 0);
         funct_7_5     : out  std_logic
     );
@@ -606,15 +600,12 @@ begin
             memWrite_out   &lt;= &apos;0&apos;;
             memToReg_out   &lt;= &apos;0&apos;;
             regWrite_out   &lt;= &apos;0&apos;;
-            branch_out     &lt;= &apos;0&apos;;
-            jump_out       &lt;= &apos;0&apos;;
             Rs1_data_out       &lt;= (others =&gt; &apos;0&apos;);
             Rs2_data_out       &lt;= (others =&gt; &apos;0&apos;);
             Imm_out       &lt;= (others =&gt; &apos;0&apos;);
             Rs1_out         &lt;= (others =&gt; &apos;0&apos;);
             Rs2_out         &lt;= (others =&gt; &apos;0&apos;);
             Rd_out         &lt;= (others =&gt; &apos;0&apos;);
-            PC_out         &lt;= (others =&gt; &apos;0&apos;);
         elsif rising_edge(clk) then
             if bubble = &apos;1&apos; then
                 ALUOp_out      &lt;= (others =&gt; &apos;0&apos;);
@@ -623,15 +614,12 @@ begin
                 memWrite_out   &lt;= &apos;0&apos;;
                 memToReg_out   &lt;= &apos;0&apos;;
                 regWrite_out   &lt;= &apos;0&apos;;
-                branch_out     &lt;= &apos;0&apos;;
-                jump_out       &lt;= &apos;0&apos;;
                 Rs1_data_out       &lt;= (others =&gt; &apos;0&apos;);
                 Rs2_data_out       &lt;= (others =&gt; &apos;0&apos;);
                 Imm_out       &lt;= (others =&gt; &apos;0&apos;);
                 Rs1_out         &lt;= (others =&gt; &apos;0&apos;);
                 Rs2_out         &lt;= (others =&gt; &apos;0&apos;);
                 Rd_out         &lt;= (others =&gt; &apos;0&apos;);
-                PC_out         &lt;= (others =&gt; &apos;0&apos;);
             else
                 -- On clock edge, latch inputs to outputs
                 ALUOp_out      &lt;= ALUOp_in;
@@ -640,15 +628,12 @@ begin
                 memWrite_out   &lt;= memWrite_in;
                 memToReg_out   &lt;= memToReg_in;
                 regWrite_out   &lt;= regWrite_in;
-                branch_out     &lt;= branch_in;
-                jump_out       &lt;= jump_in;
                 Rs1_data_out       &lt;= Rs1_data_in;
                 Rs2_data_out       &lt;= Rs2_data_in;
                 Imm_out       &lt;= Imm_in;
                 Rs1_out         &lt;= Rs1_in;
                 Rs2_out         &lt;= Rs2_in;
                 Rd_out         &lt;= Rd_in;
-                PC_out &lt;= PC_in;
                 funct_3_out &lt;= funct_3_in;
                 funct_7_5 &lt;= funct_7_in(5);
             end if;
@@ -658,7 +643,7 @@ end Behavioral;</string>
         </entry>
         <entry>
           <string>externalOutputs</string>
-          <string>ALUOp_out:2,ALUSrc_out,memRead_out,memWrite_out,memToReg_out,regWrite_out,branch_out,jump_out,Rs1_data_out:32,Rs2_data_out:32,Imm_out:32,Rs1_out:5,Rs2_out:5,Rd_out:5,PC_out:32,funct_3_out:3,funct_7_5</string>
+          <string>ALUOp_out:2,ALUSrc_out,memRead_out,memWrite_out,memToReg_out,regWrite_out,Rs1_data_out:32,Rs2_data_out:32,Imm_out:32,Rs1_out:5,Rs2_out:5,Rd_out:5,funct_3_out:3,funct_7_5</string>
         </entry>
         <entry>
           <string>Width</string>
@@ -782,7 +767,7 @@ end Behavioral;</string>
         </entry>
         <entry>
           <string>externalInputs</string>
-          <string>clk,reset,MemRead_in,MemWrite_in,MemToReg_in,RegWrite_in,branch_in,jump_in,ALUResult_in:32,WriteData_in:32,Rd_in:5,zero_in,branch_target_in:32,bubble</string>
+          <string>clk,reset,MemRead_in,MemWrite_in,MemToReg_in,RegWrite_in,ALUResult_in:32,WriteData_in:32,Rd_in:5,bubble</string>
         </entry>
         <entry>
           <string>Code</string>
@@ -800,15 +785,10 @@ entity EX_MEM_Pipeline is
         MemWrite_in  : in  std_logic;
         MemToReg_in  : in  std_logic;
         RegWrite_in  : in  std_logic;
-        branch_in    : in  std_logic;
-        jump_in      : in  std_logic;
         -- Data signals
         ALUResult_in : in  std_logic_vector(31 downto 0);
         WriteData_in : in  std_logic_vector(31 downto 0);
         Rd_in       : in  std_logic_vector(4 downto 0);
-        zero_in       : in  std_logic;
-        branch_target_in : in  std_logic_vector(31 downto 0);
-
         bubble       : in std_logic; -- Entrada de bubble síncrona
 
         -- Outputs to MEM stage
@@ -818,11 +798,7 @@ entity EX_MEM_Pipeline is
         RegWrite_out : out std_logic;
         ALUResult_out: out std_logic_vector(31 downto 0);
         WriteData_out: out std_logic_vector(31 downto 0);
-        Rd_out       : out std_logic_vector(4 downto 0);
-        branch_out   : out std_logic;
-        jump_out     : out std_logic;
-        zero_out     : out std_logic;
-        branch_target_out : out std_logic_vector(31 downto 0)
+        Rd_out       : out std_logic_vector(4 downto 0)
     );
 end EX_MEM_Pipeline;
 
@@ -838,10 +814,6 @@ begin
             ALUResult_out &lt;= (others =&gt; &apos;0&apos;);
             WriteData_out &lt;= (others =&gt; &apos;0&apos;);
             Rd_out   &lt;= (others =&gt; &apos;0&apos;);
-            jump_out      &lt;= &apos;0&apos;;
-            branch_out    &lt;= &apos;0&apos;;
-            zero_out      &lt;= &apos;0&apos;;
-            branch_target_out &lt;= (others =&gt; &apos;0&apos;);
         elsif rising_edge(clk) then
             if bubble = &apos;1&apos; then
 
@@ -852,10 +824,6 @@ begin
                 ALUResult_out &lt;= (others =&gt; &apos;0&apos;);
                 WriteData_out &lt;= (others =&gt; &apos;0&apos;);
                 Rd_out   &lt;= (others =&gt; &apos;0&apos;);
-                jump_out      &lt;= &apos;0&apos;;
-                branch_out    &lt;= &apos;0&apos;;
-                zero_out      &lt;= &apos;0&apos;;
-                branch_target_out &lt;= (others =&gt; &apos;0&apos;);
 
             else
                 MemRead_out   &lt;= MemRead_in;
@@ -865,10 +833,6 @@ begin
                 ALUResult_out &lt;= ALUResult_in;
                 WriteData_out &lt;= WriteData_in;
                 Rd_out   &lt;= Rd_in;
-                jump_out      &lt;= jump_in;
-                branch_out    &lt;= branch_in;
-                zero_out      &lt;= zero_in;
-                branch_target_out &lt;= branch_target_in;
             end if;
         end if;
     end process;
@@ -876,7 +840,7 @@ end Behavioral;</string>
         </entry>
         <entry>
           <string>externalOutputs</string>
-          <string>MemRead_out,MemWrite_out,MemToReg_out,RegWrite_out,ALUResult_out:32,WriteData_out:32,Rd_out:5,branch_out,jump_out,zero_out,branch_target_out:32</string>
+          <string>MemRead_out,MemWrite_out,MemToReg_out,RegWrite_out,ALUResult_out:32,WriteData_out:32,Rd_out:5</string>
         </entry>
         <entry>
           <string>Width</string>
@@ -1382,14 +1346,14 @@ end Behavioral;</string>
       <elementAttributes>
         <entry>
           <string>rotation</string>
-          <rotation rotation="2"/>
+          <rotation rotation="1"/>
         </entry>
         <entry>
           <string>NetName</string>
           <string>reset</string>
         </entry>
       </elementAttributes>
-      <pos x="1180" y="180"/>
+      <pos x="1160" y="120"/>
     </visualElement>
     <visualElement>
       <elementName>Tunnel</elementName>
@@ -1476,14 +1440,14 @@ end Behavioral;</string>
       <elementAttributes>
         <entry>
           <string>rotation</string>
-          <rotation rotation="2"/>
+          <rotation rotation="1"/>
         </entry>
         <entry>
           <string>NetName</string>
           <string>clk</string>
         </entry>
       </elementAttributes>
-      <pos x="1180" y="160"/>
+      <pos x="1180" y="120"/>
     </visualElement>
     <visualElement>
       <elementName>Tunnel</elementName>
@@ -1590,24 +1554,10 @@ end Behavioral;</string>
         </entry>
         <entry>
           <string>NetName</string>
-          <string>IDEXbubble</string>
-        </entry>
-      </elementAttributes>
-      <pos x="1180" y="660"/>
-    </visualElement>
-    <visualElement>
-      <elementName>Tunnel</elementName>
-      <elementAttributes>
-        <entry>
-          <string>rotation</string>
-          <rotation rotation="2"/>
-        </entry>
-        <entry>
-          <string>NetName</string>
           <string>EXMEMbubble</string>
         </entry>
       </elementAttributes>
-      <pos x="2240" y="420"/>
+      <pos x="2240" y="340"/>
     </visualElement>
     <visualElement>
       <elementName>novoblocoIF.dig</elementName>
@@ -1999,16 +1949,6 @@ end Behavioral;</string>
       <elementName>Tunnel</elementName>
       <elementAttributes>
         <entry>
-          <string>NetName</string>
-          <string>rd_IDEX</string>
-        </entry>
-      </elementAttributes>
-      <pos x="1580" y="420"/>
-    </visualElement>
-    <visualElement>
-      <elementName>Tunnel</elementName>
-      <elementAttributes>
-        <entry>
           <string>rotation</string>
           <rotation rotation="2"/>
         </entry>
@@ -2027,7 +1967,7 @@ end Behavioral;</string>
           <string>RegWrite_IDEX</string>
         </entry>
       </elementAttributes>
-      <pos x="1580" y="520"/>
+      <pos x="1580" y="120"/>
     </visualElement>
     <visualElement>
       <elementName>Tunnel</elementName>
@@ -2177,7 +2117,7 @@ end Behavioral;</string>
           <boolean>true</boolean>
         </entry>
       </elementAttributes>
-      <pos x="1760" y="420"/>
+      <pos x="1640" y="420"/>
     </visualElement>
     <visualElement>
       <elementName>adder.dig</elementName>
@@ -2218,12 +2158,12 @@ end Behavioral;</string>
       <elementName>External</elementName>
       <elementAttributes>
         <entry>
-          <string>Label</string>
-          <string>comparator_32bit</string>
-        </entry>
-        <entry>
           <string>applicationType</string>
           <appType>GHDL</appType>
+        </entry>
+        <entry>
+          <string>Label</string>
+          <string>comparator_32bit</string>
         </entry>
         <entry>
           <string>externalInputs</string>
@@ -2310,7 +2250,7 @@ end architecture behavioral;</string>
           <string>rs1_data-id</string>
         </entry>
       </elementAttributes>
-      <pos x="1000" y="440"/>
+      <pos x="980" y="440"/>
     </visualElement>
     <visualElement>
       <elementName>Tunnel</elementName>
@@ -2320,7 +2260,7 @@ end architecture behavioral;</string>
           <string>jump</string>
         </entry>
       </elementAttributes>
-      <pos x="1060" y="300"/>
+      <pos x="900" y="300"/>
     </visualElement>
     <visualElement>
       <elementName>Tunnel</elementName>
@@ -2330,7 +2270,7 @@ end architecture behavioral;</string>
           <string>pc_sel_cu</string>
         </entry>
       </elementAttributes>
-      <pos x="1000" y="320"/>
+      <pos x="900" y="320"/>
     </visualElement>
     <visualElement>
       <elementName>External</elementName>
@@ -2460,41 +2400,7 @@ end architecture behavioral;</string>
           <long>0</long>
         </entry>
       </elementAttributes>
-      <pos x="1160" y="340"/>
-    </visualElement>
-    <visualElement>
-      <elementName>Const</elementName>
-      <elementAttributes>
-        <entry>
-          <string>Bits</string>
-          <int>32</int>
-        </entry>
-      </elementAttributes>
-      <pos x="2020" y="500"/>
-    </visualElement>
-    <visualElement>
-      <elementName>Const</elementName>
-      <elementAttributes>
-        <entry>
-          <string>Value</string>
-          <long>0</long>
-        </entry>
-      </elementAttributes>
       <pos x="-120" y="-20"/>
-    </visualElement>
-    <visualElement>
-      <elementName>Tunnel</elementName>
-      <elementAttributes>
-        <entry>
-          <string>rotation</string>
-          <rotation rotation="1"/>
-        </entry>
-        <entry>
-          <string>NetName</string>
-          <string>branch</string>
-        </entry>
-      </elementAttributes>
-      <pos x="1100" y="140"/>
     </visualElement>
     <visualElement>
       <elementName>Tunnel</elementName>
@@ -2525,25 +2431,15 @@ end architecture behavioral;</string>
       <pos x="-40" y="1020"/>
     </visualElement>
     <visualElement>
-      <elementName>Const</elementName>
-      <elementAttributes>
-        <entry>
-          <string>Value</string>
-          <long>0</long>
-        </entry>
-      </elementAttributes>
-      <pos x="1160" y="320"/>
-    </visualElement>
-    <visualElement>
       <elementName>Multiplexer</elementName>
       <elementAttributes>
         <entry>
-          <string>Bits</string>
-          <int>32</int>
-        </entry>
-        <entry>
           <string>Selector Bits</string>
           <int>2</int>
+        </entry>
+        <entry>
+          <string>Bits</string>
+          <int>32</int>
         </entry>
       </elementAttributes>
       <pos x="-360" y="760"/>
@@ -2552,16 +2448,16 @@ end architecture behavioral;</string>
       <elementName>Multiplexer</elementName>
       <elementAttributes>
         <entry>
-          <string>flipSelPos</string>
-          <boolean>true</boolean>
+          <string>Selector Bits</string>
+          <int>2</int>
         </entry>
         <entry>
           <string>Bits</string>
           <int>32</int>
         </entry>
         <entry>
-          <string>Selector Bits</string>
-          <int>2</int>
+          <string>flipSelPos</string>
+          <boolean>true</boolean>
         </entry>
       </elementAttributes>
       <pos x="-360" y="640"/>
@@ -2598,26 +2494,6 @@ end architecture behavioral;</string>
       <elementName>Tunnel</elementName>
       <elementAttributes>
         <entry>
-          <string>NetName</string>
-          <string>rs1_ex</string>
-        </entry>
-      </elementAttributes>
-      <pos x="1580" y="380"/>
-    </visualElement>
-    <visualElement>
-      <elementName>Tunnel</elementName>
-      <elementAttributes>
-        <entry>
-          <string>NetName</string>
-          <string>rs2_ex</string>
-        </entry>
-      </elementAttributes>
-      <pos x="1580" y="400"/>
-    </visualElement>
-    <visualElement>
-      <elementName>Tunnel</elementName>
-      <elementAttributes>
-        <entry>
           <string>rotation</string>
           <rotation rotation="2"/>
         </entry>
@@ -2646,12 +2522,12 @@ end architecture behavioral;</string>
       <elementName>External</elementName>
       <elementAttributes>
         <entry>
-          <string>Label</string>
-          <string>forwarding_unit</string>
-        </entry>
-        <entry>
           <string>applicationType</string>
           <appType>GHDL</appType>
+        </entry>
+        <entry>
+          <string>Label</string>
+          <string>forwarding_unit</string>
         </entry>
         <entry>
           <string>externalInputs</string>
@@ -3043,7 +2919,7 @@ end architecture behavioral;</string>
           <string>rd_IDEX</string>
         </entry>
       </elementAttributes>
-      <pos x="2240" y="360"/>
+      <pos x="2240" y="320"/>
     </visualElement>
     <visualElement>
       <elementName>Tunnel</elementName>
@@ -3133,16 +3009,6 @@ end architecture behavioral;</string>
       <elementName>Tunnel</elementName>
       <elementAttributes>
         <entry>
-          <string>NetName</string>
-          <string>rs1_ex-data</string>
-        </entry>
-      </elementAttributes>
-      <pos x="1580" y="320"/>
-    </visualElement>
-    <visualElement>
-      <elementName>Tunnel</elementName>
-      <elementAttributes>
-        <entry>
           <string>rotation</string>
           <rotation rotation="2"/>
         </entry>
@@ -3151,7 +3017,7 @@ end architecture behavioral;</string>
           <string>rs1_ex-data</string>
         </entry>
       </elementAttributes>
-      <pos x="1820" y="480"/>
+      <pos x="1680" y="480"/>
     </visualElement>
     <visualElement>
       <elementName>Tunnel</elementName>
@@ -3161,17 +3027,7 @@ end architecture behavioral;</string>
           <string>rs2_ex-data</string>
         </entry>
       </elementAttributes>
-      <pos x="1580" y="340"/>
-    </visualElement>
-    <visualElement>
-      <elementName>Tunnel</elementName>
-      <elementAttributes>
-        <entry>
-          <string>NetName</string>
-          <string>rs2_ex-data</string>
-        </entry>
-      </elementAttributes>
-      <pos x="1760" y="140"/>
+      <pos x="1760" y="380"/>
     </visualElement>
     <visualElement>
       <elementName>External</elementName>
@@ -3261,20 +3117,15 @@ end architecture;</string>
       <pos x="1740" y="720"/>
     </visualElement>
     <visualElement>
-      <elementName>Const</elementName>
-      <elementAttributes/>
-      <pos x="2200" y="380"/>
-    </visualElement>
-    <visualElement>
       <elementName>Multiplexer</elementName>
       <elementAttributes>
         <entry>
-          <string>Bits</string>
-          <int>32</int>
-        </entry>
-        <entry>
           <string>Selector Bits</string>
           <int>2</int>
+        </entry>
+        <entry>
+          <string>Bits</string>
+          <int>32</int>
         </entry>
       </elementAttributes>
       <pos x="1840" y="480"/>
@@ -3283,12 +3134,12 @@ end architecture;</string>
       <elementName>Multiplexer</elementName>
       <elementAttributes>
         <entry>
-          <string>Bits</string>
-          <int>32</int>
-        </entry>
-        <entry>
           <string>Selector Bits</string>
           <int>2</int>
+        </entry>
+        <entry>
+          <string>Bits</string>
+          <int>32</int>
         </entry>
       </elementAttributes>
       <pos x="1780" y="560"/>
@@ -3353,7 +3204,7 @@ end architecture;</string>
           <string>rd_data-wb</string>
         </entry>
       </elementAttributes>
-      <pos x="1660" y="600"/>
+      <pos x="1680" y="600"/>
     </visualElement>
     <visualElement>
       <elementName>Out</elementName>
@@ -3565,39 +3416,99 @@ end architecture;</string>
       </elementAttributes>
       <pos x="460" y="-180"/>
     </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>rd_IDEX</string>
+        </entry>
+      </elementAttributes>
+      <pos x="1520" y="380"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>rs1_ex</string>
+        </entry>
+      </elementAttributes>
+      <pos x="1520" y="340"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>rs2_ex</string>
+        </entry>
+      </elementAttributes>
+      <pos x="1520" y="360"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>rs1_ex-data</string>
+        </entry>
+      </elementAttributes>
+      <pos x="1520" y="280"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>rs2_ex-data</string>
+        </entry>
+      </elementAttributes>
+      <pos x="1520" y="300"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="3"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>IDEXbubble</string>
+        </entry>
+      </elementAttributes>
+      <pos x="1160" y="640"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>branch</string>
+        </entry>
+      </elementAttributes>
+      <pos x="1120" y="20"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>jump</string>
+        </entry>
+      </elementAttributes>
+      <pos x="900" y="0"/>
+    </visualElement>
   </visualElements>
   <wires>
-    <wire>
-      <p1 x="960" y="220"/>
-      <p2 x="1200" y="260"/>
-    </wire>
-    <wire>
-      <p1 x="980" y="240"/>
-      <p2 x="1200" y="280"/>
-    </wire>
-    <wire>
-      <p1 x="1000" y="260"/>
-      <p2 x="1200" y="300"/>
-    </wire>
-    <wire>
-      <p1 x="900" y="160"/>
-      <p2 x="1200" y="200"/>
-    </wire>
-    <wire>
-      <p1 x="920" y="180"/>
-      <p2 x="1200" y="220"/>
-    </wire>
-    <wire>
-      <p1 x="940" y="200"/>
-      <p2 x="1200" y="240"/>
-    </wire>
     <wire>
       <p1 x="-760" y="640"/>
       <p2 x="-520" y="640"/>
     </wire>
     <wire>
       <p1 x="480" y="640"/>
-      <p2 x="1180" y="640"/>
+      <p2 x="1140" y="640"/>
     </wire>
     <wire>
       <p1 x="0" y="640"/>
@@ -3609,7 +3520,7 @@ end architecture;</string>
     </wire>
     <wire>
       <p1 x="880" y="0"/>
-      <p2 x="1040" y="0"/>
+      <p2 x="900" y="0"/>
     </wire>
     <wire>
       <p1 x="-80" y="-260"/>
@@ -3636,6 +3547,14 @@ end architecture;</string>
       <p2 x="1000" y="260"/>
     </wire>
     <wire>
+      <p1 x="1080" y="260"/>
+      <p2 x="1200" y="260"/>
+    </wire>
+    <wire>
+      <p1 x="1000" y="260"/>
+      <p2 x="1040" y="260"/>
+    </wire>
+    <wire>
       <p1 x="1540" y="260"/>
       <p2 x="2260" y="260"/>
     </wire>
@@ -3650,14 +3569,6 @@ end architecture;</string>
     <wire>
       <p1 x="-680" y="520"/>
       <p2 x="-660" y="520"/>
-    </wire>
-    <wire>
-      <p1 x="1540" y="520"/>
-      <p2 x="1580" y="520"/>
-    </wire>
-    <wire>
-      <p1 x="1180" y="520"/>
-      <p2 x="1200" y="520"/>
     </wire>
     <wire>
       <p1 x="1880" y="520"/>
@@ -3692,10 +3603,6 @@ end architecture;</string>
       <p2 x="360" y="400"/>
     </wire>
     <wire>
-      <p1 x="1040" y="400"/>
-      <p2 x="1200" y="400"/>
-    </wire>
-    <wire>
       <p1 x="920" y="400"/>
       <p2 x="960" y="400"/>
     </wire>
@@ -3716,12 +3623,12 @@ end architecture;</string>
       <p2 x="-680" y="400"/>
     </wire>
     <wire>
-      <p1 x="2200" y="400"/>
-      <p2 x="2260" y="400"/>
+      <p1 x="1080" y="400"/>
+      <p2 x="1200" y="400"/>
     </wire>
     <wire>
       <p1 x="1500" y="400"/>
-      <p2 x="1580" y="400"/>
+      <p2 x="1540" y="400"/>
     </wire>
     <wire>
       <p1 x="-100" y="400"/>
@@ -3744,10 +3651,6 @@ end architecture;</string>
       <p2 x="-80" y="-20"/>
     </wire>
     <wire>
-      <p1 x="1180" y="660"/>
-      <p2 x="1200" y="660"/>
-    </wire>
-    <wire>
       <p1 x="420" y="660"/>
       <p2 x="460" y="660"/>
     </wire>
@@ -3764,20 +3667,28 @@ end architecture;</string>
       <p2 x="1020" y="20"/>
     </wire>
     <wire>
+      <p1 x="1020" y="20"/>
+      <p2 x="1120" y="20"/>
+    </wire>
+    <wire>
       <p1 x="2660" y="280"/>
       <p2 x="3140" y="280"/>
     </wire>
     <wire>
-      <p1 x="1500" y="280"/>
+      <p1 x="2040" y="280"/>
       <p2 x="2260" y="280"/>
+    </wire>
+    <wire>
+      <p1 x="1500" y="280"/>
+      <p2 x="1520" y="280"/>
     </wire>
     <wire>
       <p1 x="880" y="280"/>
       <p2 x="1020" y="280"/>
     </wire>
     <wire>
-      <p1 x="1020" y="280"/>
-      <p2 x="1100" y="280"/>
+      <p1 x="1060" y="280"/>
+      <p2 x="1200" y="280"/>
     </wire>
     <wire>
       <p1 x="3140" y="280"/>
@@ -3812,10 +3723,6 @@ end architecture;</string>
       <p2 x="-500" y="160"/>
     </wire>
     <wire>
-      <p1 x="1180" y="160"/>
-      <p2 x="1200" y="160"/>
-    </wire>
-    <wire>
       <p1 x="2240" y="160"/>
       <p2 x="2260" y="160"/>
     </wire>
@@ -3832,8 +3739,16 @@ end architecture;</string>
       <p2 x="900" y="160"/>
     </wire>
     <wire>
+      <p1 x="1180" y="160"/>
+      <p2 x="1200" y="160"/>
+    </wire>
+    <wire>
       <p1 x="500" y="160"/>
       <p2 x="580" y="160"/>
+    </wire>
+    <wire>
+      <p1 x="900" y="160"/>
+      <p2 x="1140" y="160"/>
     </wire>
     <wire>
       <p1 x="3760" y="160"/>
@@ -3848,24 +3763,8 @@ end architecture;</string>
       <p2 x="-360" y="800"/>
     </wire>
     <wire>
-      <p1 x="2020" y="420"/>
-      <p2 x="2160" y="420"/>
-    </wire>
-    <wire>
       <p1 x="340" y="420"/>
       <p2 x="400" y="420"/>
-    </wire>
-    <wire>
-      <p1 x="1060" y="420"/>
-      <p2 x="1200" y="420"/>
-    </wire>
-    <wire>
-      <p1 x="1500" y="420"/>
-      <p2 x="1580" y="420"/>
-    </wire>
-    <wire>
-      <p1 x="2240" y="420"/>
-      <p2 x="2260" y="420"/>
     </wire>
     <wire>
       <p1 x="600" y="420"/>
@@ -3874,6 +3773,18 @@ end architecture;</string>
     <wire>
       <p1 x="1900" y="420"/>
       <p2 x="1960" y="420"/>
+    </wire>
+    <wire>
+      <p1 x="2020" y="420"/>
+      <p2 x="2040" y="420"/>
+    </wire>
+    <wire>
+      <p1 x="1100" y="420"/>
+      <p2 x="1200" y="420"/>
+    </wire>
+    <wire>
+      <p1 x="1500" y="420"/>
+      <p2 x="1520" y="420"/>
     </wire>
     <wire>
       <p1 x="720" y="1060"/>
@@ -3920,28 +3831,32 @@ end architecture;</string>
       <p2 x="-160" y="300"/>
     </wire>
     <wire>
-      <p1 x="1500" y="300"/>
-      <p2 x="2260" y="300"/>
-    </wire>
-    <wire>
       <p1 x="-520" y="300"/>
       <p2 x="-340" y="300"/>
-    </wire>
-    <wire>
-      <p1 x="880" y="300"/>
-      <p2 x="1040" y="300"/>
     </wire>
     <wire>
       <p1 x="3680" y="300"/>
       <p2 x="3700" y="300"/>
     </wire>
     <wire>
-      <p1 x="-160" y="300"/>
-      <p2 x="-140" y="300"/>
+      <p1 x="1500" y="300"/>
+      <p2 x="1520" y="300"/>
+    </wire>
+    <wire>
+      <p1 x="1640" y="300"/>
+      <p2 x="2260" y="300"/>
+    </wire>
+    <wire>
+      <p1 x="880" y="300"/>
+      <p2 x="900" y="300"/>
     </wire>
     <wire>
       <p1 x="1040" y="300"/>
-      <p2 x="1060" y="300"/>
+      <p2 x="1200" y="300"/>
+    </wire>
+    <wire>
+      <p1 x="-160" y="300"/>
+      <p2 x="-140" y="300"/>
     </wire>
     <wire>
       <p1 x="720" y="940"/>
@@ -3988,10 +3903,6 @@ end architecture;</string>
       <p2 x="-420" y="180"/>
     </wire>
     <wire>
-      <p1 x="1180" y="180"/>
-      <p2 x="1200" y="180"/>
-    </wire>
-    <wire>
       <p1 x="2240" y="180"/>
       <p2 x="2260" y="180"/>
     </wire>
@@ -4001,19 +3912,23 @@ end architecture;</string>
     </wire>
     <wire>
       <p1 x="1500" y="180"/>
-      <p2 x="1780" y="180"/>
+      <p2 x="1660" y="180"/>
     </wire>
     <wire>
       <p1 x="880" y="180"/>
       <p2 x="920" y="180"/>
     </wire>
     <wire>
-      <p1 x="-420" y="820"/>
-      <p2 x="-360" y="820"/>
+      <p1 x="1160" y="180"/>
+      <p2 x="1200" y="180"/>
     </wire>
     <wire>
-      <p1 x="1080" y="440"/>
-      <p2 x="1200" y="440"/>
+      <p1 x="920" y="180"/>
+      <p2 x="1120" y="180"/>
+    </wire>
+    <wire>
+      <p1 x="-420" y="820"/>
+      <p2 x="-360" y="820"/>
     </wire>
     <wire>
       <p1 x="2680" y="440"/>
@@ -4040,8 +3955,12 @@ end architecture;</string>
       <p2 x="1960" y="440"/>
     </wire>
     <wire>
-      <p1 x="1780" y="440"/>
-      <p2 x="1800" y="440"/>
+      <p1 x="1680" y="440"/>
+      <p2 x="1780" y="440"/>
+    </wire>
+    <wire>
+      <p1 x="1120" y="440"/>
+      <p2 x="1200" y="440"/>
     </wire>
     <wire>
       <p1 x="2960" y="440"/>
@@ -4084,20 +4003,20 @@ end architecture;</string>
       <p2 x="-680" y="320"/>
     </wire>
     <wire>
-      <p1 x="2160" y="320"/>
+      <p1 x="880" y="320"/>
+      <p2 x="900" y="320"/>
+    </wire>
+    <wire>
+      <p1 x="2240" y="320"/>
       <p2 x="2260" y="320"/>
     </wire>
     <wire>
-      <p1 x="880" y="320"/>
-      <p2 x="1000" y="320"/>
-    </wire>
-    <wire>
-      <p1 x="1160" y="320"/>
-      <p2 x="1200" y="320"/>
-    </wire>
-    <wire>
       <p1 x="1500" y="320"/>
-      <p2 x="1580" y="320"/>
+      <p2 x="1600" y="320"/>
+    </wire>
+    <wire>
+      <p1 x="980" y="320"/>
+      <p2 x="1200" y="320"/>
     </wire>
     <wire>
       <p1 x="-20" y="960"/>
@@ -4172,8 +4091,16 @@ end architecture;</string>
       <p2 x="-680" y="200"/>
     </wire>
     <wire>
+      <p1 x="1140" y="200"/>
+      <p2 x="1200" y="200"/>
+    </wire>
+    <wire>
       <p1 x="880" y="200"/>
       <p2 x="940" y="200"/>
+    </wire>
+    <wire>
+      <p1 x="940" y="200"/>
+      <p2 x="1100" y="200"/>
     </wire>
     <wire>
       <p1 x="3800" y="200"/>
@@ -4188,20 +4115,12 @@ end architecture;</string>
       <p2 x="1960" y="460"/>
     </wire>
     <wire>
-      <p1 x="1100" y="460"/>
-      <p2 x="1200" y="460"/>
-    </wire>
-    <wire>
       <p1 x="2980" y="460"/>
       <p2 x="3100" y="460"/>
     </wire>
     <wire>
       <p1 x="-680" y="460"/>
       <p2 x="-540" y="460"/>
-    </wire>
-    <wire>
-      <p1 x="1500" y="460"/>
-      <p2 x="1560" y="460"/>
     </wire>
     <wire>
       <p1 x="340" y="460"/>
@@ -4212,8 +4131,12 @@ end architecture;</string>
       <p2 x="620" y="460"/>
     </wire>
     <wire>
-      <p1 x="1680" y="460"/>
-      <p2 x="1760" y="460"/>
+      <p1 x="1600" y="460"/>
+      <p2 x="1640" y="460"/>
+    </wire>
+    <wire>
+      <p1 x="1140" y="460"/>
+      <p2 x="1200" y="460"/>
     </wire>
     <wire>
       <p1 x="-80" y="-80"/>
@@ -4230,6 +4153,22 @@ end architecture;</string>
     <wire>
       <p1 x="720" y="80"/>
       <p2 x="960" y="80"/>
+    </wire>
+    <wire>
+      <p1 x="2240" y="340"/>
+      <p2 x="2260" y="340"/>
+    </wire>
+    <wire>
+      <p1 x="-360" y="340"/>
+      <p2 x="-340" y="340"/>
+    </wire>
+    <wire>
+      <p1 x="1500" y="340"/>
+      <p2 x="1520" y="340"/>
+    </wire>
+    <wire>
+      <p1 x="960" y="340"/>
+      <p2 x="1200" y="340"/>
     </wire>
     <wire>
       <p1 x="1460" y="980"/>
@@ -4252,22 +4191,6 @@ end architecture;</string>
       <p2 x="1060" y="980"/>
     </wire>
     <wire>
-      <p1 x="2140" y="340"/>
-      <p2 x="2260" y="340"/>
-    </wire>
-    <wire>
-      <p1 x="-360" y="340"/>
-      <p2 x="-340" y="340"/>
-    </wire>
-    <wire>
-      <p1 x="1160" y="340"/>
-      <p2 x="1200" y="340"/>
-    </wire>
-    <wire>
-      <p1 x="1500" y="340"/>
-      <p2 x="1580" y="340"/>
-    </wire>
-    <wire>
       <p1 x="400" y="600"/>
       <p2 x="1100" y="600"/>
     </wire>
@@ -4288,7 +4211,7 @@ end architecture;</string>
       <p2 x="1920" y="600"/>
     </wire>
     <wire>
-      <p1 x="1660" y="600"/>
+      <p1 x="1680" y="600"/>
       <p2 x="1760" y="600"/>
     </wire>
     <wire>
@@ -4302,10 +4225,6 @@ end architecture;</string>
     <wire>
       <p1 x="460" y="-220"/>
       <p2 x="500" y="-220"/>
-    </wire>
-    <wire>
-      <p1 x="880" y="220"/>
-      <p2 x="960" y="220"/>
     </wire>
     <wire>
       <p1 x="2660" y="220"/>
@@ -4324,16 +4243,24 @@ end architecture;</string>
       <p2 x="2260" y="220"/>
     </wire>
     <wire>
+      <p1 x="880" y="220"/>
+      <p2 x="960" y="220"/>
+    </wire>
+    <wire>
+      <p1 x="1120" y="220"/>
+      <p2 x="1200" y="220"/>
+    </wire>
+    <wire>
+      <p1 x="960" y="220"/>
+      <p2 x="1080" y="220"/>
+    </wire>
+    <wire>
       <p1 x="3900" y="220"/>
       <p2 x="4020" y="220"/>
     </wire>
     <wire>
       <p1 x="3180" y="220"/>
       <p2 x="3360" y="220"/>
-    </wire>
-    <wire>
-      <p1 x="-160" y="860"/>
-      <p2 x="1120" y="860"/>
     </wire>
     <wire>
       <p1 x="3160" y="480"/>
@@ -4344,14 +4271,6 @@ end architecture;</string>
       <p2 x="3100" y="480"/>
     </wire>
     <wire>
-      <p1 x="1120" y="480"/>
-      <p2 x="1200" y="480"/>
-    </wire>
-    <wire>
-      <p1 x="1500" y="480"/>
-      <p2 x="1520" y="480"/>
-    </wire>
-    <wire>
       <p1 x="340" y="480"/>
       <p2 x="380" y="480"/>
     </wire>
@@ -4360,15 +4279,19 @@ end architecture;</string>
       <p2 x="620" y="480"/>
     </wire>
     <wire>
-      <p1 x="1820" y="480"/>
+      <p1 x="1680" y="480"/>
       <p2 x="1840" y="480"/>
+    </wire>
+    <wire>
+      <p1 x="1160" y="480"/>
+      <p2 x="1200" y="480"/>
     </wire>
     <wire>
       <p1 x="-80" y="-100"/>
       <p2 x="-60" y="-100"/>
     </wire>
     <wire>
-      <p1 x="1560" y="740"/>
+      <p1 x="1540" y="740"/>
       <p2 x="1740" y="740"/>
     </wire>
     <wire>
@@ -4420,10 +4343,6 @@ end architecture;</string>
       <p2 x="1060" y="1000"/>
     </wire>
     <wire>
-      <p1 x="940" y="360"/>
-      <p2 x="1000" y="360"/>
-    </wire>
-    <wire>
       <p1 x="-360" y="360"/>
       <p2 x="-340" y="360"/>
     </wire>
@@ -4437,18 +4356,10 @@ end architecture;</string>
     </wire>
     <wire>
       <p1 x="1500" y="360"/>
-      <p2 x="1680" y="360"/>
+      <p2 x="1520" y="360"/>
     </wire>
     <wire>
-      <p1 x="1760" y="360"/>
-      <p2 x="2140" y="360"/>
-    </wire>
-    <wire>
-      <p1 x="2240" y="360"/>
-      <p2 x="2260" y="360"/>
-    </wire>
-    <wire>
-      <p1 x="1000" y="360"/>
+      <p1 x="1040" y="360"/>
       <p2 x="1200" y="360"/>
     </wire>
     <wire>
@@ -4457,7 +4368,7 @@ end architecture;</string>
     </wire>
     <wire>
       <p1 x="420" y="620"/>
-      <p2 x="1160" y="620"/>
+      <p2 x="1120" y="620"/>
     </wire>
     <wire>
       <p1 x="1760" y="620"/>
@@ -4470,10 +4381,6 @@ end architecture;</string>
     <wire>
       <p1 x="460" y="-240"/>
       <p2 x="500" y="-240"/>
-    </wire>
-    <wire>
-      <p1 x="880" y="240"/>
-      <p2 x="980" y="240"/>
     </wire>
     <wire>
       <p1 x="3740" y="240"/>
@@ -4492,6 +4399,14 @@ end architecture;</string>
       <p2 x="2260" y="240"/>
     </wire>
     <wire>
+      <p1 x="880" y="240"/>
+      <p2 x="980" y="240"/>
+    </wire>
+    <wire>
+      <p1 x="1100" y="240"/>
+      <p2 x="1200" y="240"/>
+    </wire>
+    <wire>
       <p1 x="2660" y="240"/>
       <p2 x="2680" y="240"/>
     </wire>
@@ -4508,6 +4423,10 @@ end architecture;</string>
       <p2 x="3840" y="240"/>
     </wire>
     <wire>
+      <p1 x="980" y="240"/>
+      <p2 x="1060" y="240"/>
+    </wire>
+    <wire>
       <p1 x="-40" y="880"/>
       <p2 x="260" y="880"/>
     </wire>
@@ -4516,16 +4435,8 @@ end architecture;</string>
       <p2 x="3100" y="500"/>
     </wire>
     <wire>
-      <p1 x="1160" y="500"/>
-      <p2 x="1200" y="500"/>
-    </wire>
-    <wire>
       <p1 x="340" y="500"/>
       <p2 x="480" y="500"/>
-    </wire>
-    <wire>
-      <p1 x="2020" y="500"/>
-      <p2 x="2200" y="500"/>
     </wire>
     <wire>
       <p1 x="600" y="500"/>
@@ -4540,6 +4451,14 @@ end architecture;</string>
       <p2 x="-60" y="-120"/>
     </wire>
     <wire>
+      <p1 x="1540" y="120"/>
+      <p2 x="1580" y="120"/>
+    </wire>
+    <wire>
+      <p1 x="640" y="120"/>
+      <p2 x="920" y="120"/>
+    </wire>
+    <wire>
       <p1 x="1520" y="760"/>
       <p2 x="1740" y="760"/>
     </wire>
@@ -4550,10 +4469,6 @@ end architecture;</string>
     <wire>
       <p1 x="-420" y="760"/>
       <p2 x="-360" y="760"/>
-    </wire>
-    <wire>
-      <p1 x="640" y="120"/>
-      <p2 x="920" y="120"/>
     </wire>
     <wire>
       <p1 x="720" y="1020"/>
@@ -4569,11 +4484,7 @@ end architecture;</string>
     </wire>
     <wire>
       <p1 x="920" y="380"/>
-      <p2 x="940" y="380"/>
-    </wire>
-    <wire>
-      <p1 x="960" y="380"/>
-      <p2 x="1200" y="380"/>
+      <p2 x="980" y="380"/>
     </wire>
     <wire>
       <p1 x="600" y="380"/>
@@ -4593,11 +4504,15 @@ end architecture;</string>
     </wire>
     <wire>
       <p1 x="1500" y="380"/>
-      <p2 x="1580" y="380"/>
+      <p2 x="1520" y="380"/>
     </wire>
     <wire>
-      <p1 x="2200" y="380"/>
-      <p2 x="2260" y="380"/>
+      <p1 x="1640" y="380"/>
+      <p2 x="1760" y="380"/>
+    </wire>
+    <wire>
+      <p1 x="1060" y="380"/>
+      <p2 x="1200" y="380"/>
     </wire>
     <wire>
       <p1 x="3840" y="80"/>
@@ -4612,20 +4527,24 @@ end architecture;</string>
       <p2 x="1920" y="600"/>
     </wire>
     <wire>
-      <p1 x="1540" y="260"/>
-      <p2 x="1540" y="520"/>
+      <p1 x="1540" y="120"/>
+      <p2 x="1540" y="260"/>
     </wire>
     <wire>
       <p1 x="1540" y="960"/>
       <p2 x="1540" y="1160"/>
     </wire>
     <wire>
-      <p1 x="900" y="140"/>
-      <p2 x="900" y="160"/>
+      <p1 x="1540" y="400"/>
+      <p2 x="1540" y="740"/>
     </wire>
     <wire>
       <p1 x="260" y="760"/>
       <p2 x="260" y="880"/>
+    </wire>
+    <wire>
+      <p1 x="900" y="140"/>
+      <p2 x="900" y="160"/>
     </wire>
     <wire>
       <p1 x="-520" y="200"/>
@@ -4648,20 +4567,20 @@ end architecture;</string>
       <p2 x="3720" y="100"/>
     </wire>
     <wire>
-      <p1 x="1160" y="500"/>
-      <p2 x="1160" y="620"/>
-    </wire>
-    <wire>
       <p1 x="1800" y="640"/>
       <p2 x="1800" y="660"/>
     </wire>
     <wire>
-      <p1 x="2700" y="440"/>
-      <p2 x="2700" y="480"/>
+      <p1 x="1160" y="480"/>
+      <p2 x="1160" y="640"/>
     </wire>
     <wire>
-      <p1 x="1680" y="360"/>
-      <p2 x="1680" y="460"/>
+      <p1 x="1160" y="120"/>
+      <p2 x="1160" y="180"/>
+    </wire>
+    <wire>
+      <p1 x="2700" y="440"/>
+      <p2 x="2700" y="480"/>
     </wire>
     <wire>
       <p1 x="400" y="420"/>
@@ -4672,16 +4591,16 @@ end architecture;</string>
       <p2 x="400" y="800"/>
     </wire>
     <wire>
-      <p1 x="1040" y="400"/>
+      <p1 x="1040" y="1080"/>
+      <p2 x="1040" y="1140"/>
+    </wire>
+    <wire>
+      <p1 x="1040" y="360"/>
       <p2 x="1040" y="680"/>
     </wire>
     <wire>
-      <p1 x="1040" y="0"/>
+      <p1 x="1040" y="260"/>
       <p2 x="1040" y="300"/>
-    </wire>
-    <wire>
-      <p1 x="1040" y="1080"/>
-      <p2 x="1040" y="1140"/>
     </wire>
     <wire>
       <p1 x="1040" y="680"/>
@@ -4704,24 +4623,16 @@ end architecture;</string>
       <p2 x="3860" y="200"/>
     </wire>
     <wire>
-      <p1 x="1560" y="460"/>
-      <p2 x="1560" y="740"/>
-    </wire>
-    <wire>
       <p1 x="920" y="680"/>
       <p2 x="920" y="740"/>
-    </wire>
-    <wire>
-      <p1 x="920" y="120"/>
-      <p2 x="920" y="180"/>
     </wire>
     <wire>
       <p1 x="920" y="1020"/>
       <p2 x="920" y="1260"/>
     </wire>
     <wire>
-      <p1 x="2200" y="400"/>
-      <p2 x="2200" y="500"/>
+      <p1 x="920" y="120"/>
+      <p2 x="920" y="180"/>
     </wire>
     <wire>
       <p1 x="-540" y="160"/>
@@ -4736,16 +4647,12 @@ end architecture;</string>
       <p2 x="3740" y="240"/>
     </wire>
     <wire>
-      <p1 x="1180" y="520"/>
-      <p2 x="1180" y="640"/>
+      <p1 x="1180" y="120"/>
+      <p2 x="1180" y="160"/>
     </wire>
     <wire>
       <p1 x="-160" y="300"/>
       <p2 x="-160" y="580"/>
-    </wire>
-    <wire>
-      <p1 x="-160" y="580"/>
-      <p2 x="-160" y="860"/>
     </wire>
     <wire>
       <p1 x="800" y="-20"/>
@@ -4772,8 +4679,12 @@ end architecture;</string>
       <p2 x="1700" y="720"/>
     </wire>
     <wire>
-      <p1 x="1060" y="420"/>
+      <p1 x="1060" y="380"/>
       <p2 x="1060" y="560"/>
+    </wire>
+    <wire>
+      <p1 x="1060" y="240"/>
+      <p2 x="1060" y="280"/>
     </wire>
     <wire>
       <p1 x="2980" y="260"/>
@@ -4812,24 +4723,16 @@ end architecture;</string>
       <p2 x="680" y="100"/>
     </wire>
     <wire>
-      <p1 x="940" y="360"/>
-      <p2 x="940" y="380"/>
+      <p1 x="1580" y="980"/>
+      <p2 x="1580" y="1200"/>
     </wire>
     <wire>
       <p1 x="940" y="100"/>
       <p2 x="940" y="200"/>
     </wire>
     <wire>
-      <p1 x="1580" y="980"/>
-      <p2 x="1580" y="1200"/>
-    </wire>
-    <wire>
       <p1 x="3760" y="80"/>
       <p2 x="3760" y="160"/>
-    </wire>
-    <wire>
-      <p1 x="1200" y="540"/>
-      <p2 x="1200" y="660"/>
     </wire>
     <wire>
       <p1 x="-180" y="320"/>
@@ -4844,10 +4747,6 @@ end architecture;</string>
       <p2 x="-180" y="800"/>
     </wire>
     <wire>
-      <p1 x="1080" y="440"/>
-      <p2 x="1080" y="580"/>
-    </wire>
-    <wire>
       <p1 x="3000" y="240"/>
       <p2 x="3000" y="260"/>
     </wire>
@@ -4858,6 +4757,14 @@ end architecture;</string>
     <wire>
       <p1 x="1720" y="580"/>
       <p2 x="1720" y="680"/>
+    </wire>
+    <wire>
+      <p1 x="1080" y="400"/>
+      <p2 x="1080" y="580"/>
+    </wire>
+    <wire>
+      <p1 x="1080" y="220"/>
+      <p2 x="1080" y="260"/>
     </wire>
     <wire>
       <p1 x="-700" y="260"/>
@@ -4872,16 +4779,20 @@ end architecture;</string>
       <p2 x="3900" y="220"/>
     </wire>
     <wire>
-      <p1 x="960" y="380"/>
+      <p1 x="1600" y="320"/>
+      <p2 x="1600" y="460"/>
+    </wire>
+    <wire>
+      <p1 x="960" y="1040"/>
+      <p2 x="960" y="1220"/>
+    </wire>
+    <wire>
+      <p1 x="960" y="340"/>
       <p2 x="960" y="400"/>
     </wire>
     <wire>
       <p1 x="960" y="80"/>
       <p2 x="960" y="220"/>
-    </wire>
-    <wire>
-      <p1 x="960" y="1040"/>
-      <p2 x="960" y="1220"/>
     </wire>
     <wire>
       <p1 x="960" y="400"/>
@@ -4904,12 +4815,12 @@ end architecture;</string>
       <p2 x="840" y="20"/>
     </wire>
     <wire>
-      <p1 x="1100" y="460"/>
-      <p2 x="1100" y="600"/>
+      <p1 x="1100" y="200"/>
+      <p2 x="1100" y="240"/>
     </wire>
     <wire>
-      <p1 x="1100" y="140"/>
-      <p2 x="1100" y="280"/>
+      <p1 x="1100" y="420"/>
+      <p2 x="1100" y="600"/>
     </wire>
     <wire>
       <p1 x="460" y="660"/>
@@ -4936,8 +4847,16 @@ end architecture;</string>
       <p2 x="-340" y="880"/>
     </wire>
     <wire>
+      <p1 x="980" y="320"/>
+      <p2 x="980" y="380"/>
+    </wire>
+    <wire>
       <p1 x="980" y="60"/>
       <p2 x="980" y="240"/>
+    </wire>
+    <wire>
+      <p1 x="980" y="380"/>
+      <p2 x="980" y="440"/>
     </wire>
     <wire>
       <p1 x="1620" y="1000"/>
@@ -4952,16 +4871,20 @@ end architecture;</string>
       <p2 x="3800" y="200"/>
     </wire>
     <wire>
-      <p1 x="2140" y="340"/>
-      <p2 x="2140" y="360"/>
-    </wire>
-    <wire>
       <p1 x="1500" y="940"/>
       <p2 x="1500" y="1120"/>
     </wire>
     <wire>
       <p1 x="-480" y="440"/>
       <p2 x="-480" y="460"/>
+    </wire>
+    <wire>
+      <p1 x="1120" y="180"/>
+      <p2 x="1120" y="220"/>
+    </wire>
+    <wire>
+      <p1 x="1120" y="440"/>
+      <p2 x="1120" y="620"/>
     </wire>
     <wire>
       <p1 x="480" y="500"/>
@@ -4988,20 +4911,8 @@ end architecture;</string>
       <p2 x="3040" y="480"/>
     </wire>
     <wire>
-      <p1 x="1120" y="480"/>
-      <p2 x="1120" y="860"/>
-    </wire>
-    <wire>
-      <p1 x="1760" y="140"/>
-      <p2 x="1760" y="360"/>
-    </wire>
-    <wire>
       <p1 x="1760" y="520"/>
       <p2 x="1760" y="600"/>
-    </wire>
-    <wire>
-      <p1 x="1760" y="360"/>
-      <p2 x="1760" y="420"/>
     </wire>
     <wire>
       <p1 x="-100" y="360"/>
@@ -5012,16 +4923,12 @@ end architecture;</string>
       <p2 x="-100" y="680"/>
     </wire>
     <wire>
-      <p1 x="1000" y="40"/>
-      <p2 x="1000" y="260"/>
-    </wire>
-    <wire>
-      <p1 x="1000" y="360"/>
-      <p2 x="1000" y="440"/>
-    </wire>
-    <wire>
       <p1 x="1000" y="1060"/>
       <p2 x="1000" y="1180"/>
+    </wire>
+    <wire>
+      <p1 x="1000" y="40"/>
+      <p2 x="1000" y="260"/>
     </wire>
     <wire>
       <p1 x="360" y="160"/>
@@ -5038,6 +4945,14 @@ end architecture;</string>
     <wire>
       <p1 x="360" y="700"/>
       <p2 x="360" y="720"/>
+    </wire>
+    <wire>
+      <p1 x="1640" y="300"/>
+      <p2 x="1640" y="380"/>
+    </wire>
+    <wire>
+      <p1 x="1640" y="380"/>
+      <p2 x="1640" y="420"/>
     </wire>
     <wire>
       <p1 x="3820" y="100"/>
@@ -5060,12 +4975,20 @@ end architecture;</string>
       <p2 x="880" y="0"/>
     </wire>
     <wire>
-      <p1 x="1520" y="480"/>
+      <p1 x="1520" y="420"/>
       <p2 x="1520" y="760"/>
     </wire>
     <wire>
-      <p1 x="2160" y="320"/>
-      <p2 x="2160" y="420"/>
+      <p1 x="1140" y="160"/>
+      <p2 x="1140" y="200"/>
+    </wire>
+    <wire>
+      <p1 x="1140" y="460"/>
+      <p2 x="1140" y="640"/>
+    </wire>
+    <wire>
+      <p1 x="1780" y="440"/>
+      <p2 x="1780" y="560"/>
     </wire>
     <wire>
       <p1 x="500" y="140"/>
@@ -5074,14 +4997,6 @@ end architecture;</string>
     <wire>
       <p1 x="3060" y="160"/>
       <p2 x="3060" y="520"/>
-    </wire>
-    <wire>
-      <p1 x="1780" y="180"/>
-      <p2 x="1780" y="420"/>
-    </wire>
-    <wire>
-      <p1 x="1780" y="440"/>
-      <p2 x="1780" y="560"/>
     </wire>
     <wire>
       <p1 x="-760" y="400"/>
@@ -5098,6 +5013,14 @@ end architecture;</string>
     <wire>
       <p1 x="2680" y="240"/>
       <p2 x="2680" y="440"/>
+    </wire>
+    <wire>
+      <p1 x="2040" y="280"/>
+      <p2 x="2040" y="420"/>
+    </wire>
+    <wire>
+      <p1 x="1660" y="180"/>
+      <p2 x="1660" y="420"/>
     </wire>
     <wire>
       <p1 x="380" y="480"/>
