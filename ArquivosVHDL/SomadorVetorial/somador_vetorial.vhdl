@@ -44,28 +44,3 @@ begin
         end case;
     end process;
 end Behavioral;
-
-
-LIBRARY ieee;
-USE ieee.std_logic_1164.all;
-USE ieee.numeric_std.all;
-
-entity main is
-  port (
-    A: in std_logic_vector(31 downto 0);
-    B: in std_logic_vector(31 downto 0);
-    Mode: in std_logic;
-    Size: in std_logic_vector(1 downto 0);
-    result: out std_logic_vector(31 downto 0));
-end main;
-
-architecture Behavioral of main is
-begin
-  gate0: entity work.VectorAdderSubtractor -- VectorAdderSubtractor
-    port map (
-      A_i => A,
-      B_i => B,
-      mode_i => Mode,
-      vecSize_i => Size,
-      S_o => result);
-end Behavioral;
