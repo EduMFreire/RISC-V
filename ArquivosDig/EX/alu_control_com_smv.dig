@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="utf-8"?>
+<circuit>
+  <version>2</version>
+  <attributes/>
+  <visualElements>
+    <visualElement>
+      <elementName>External</elementName>
+      <elementAttributes>
+        <entry>
+          <string>applicationType</string>
+          <appType>GHDL</appType>
+        </entry>
+        <entry>
+          <string>Label</string>
+          <string>ALUControl</string>
+        </entry>
+        <entry>
+          <string>externalInputs</string>
+          <string>ALUOp:2,funct3:3,funct7_5,size:2</string>
+        </entry>
+        <entry>
+          <string>Code</string>
+          <string>library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity ALUControl is
+    port (
+        ALUOp  : in  std_logic_vector(1 downto 0);
+        funct3 : in  std_logic_vector(2 downto 0);
+        funct7_5: in std_logic;  -- bit 30 da instrução (funct7[5])
+	size : in std_logic_vector(1 downto 0); -- controle externo para operações vetoriais
+        ALUCtrl : out std_logic_vector(4 downto 0)
+    );
+end entity;
+
+architecture Behavioral of ALUControl is
+begin
+    process(ALUOp, funct3, funct7_5, size)
+    begin
+        case ALUOp is
+            when &quot;00&quot; =&gt;  -- Loads, Stores, AUIPC (ADD)
+		case size is
+			when &quot;00&quot; =&gt; 
+				ALUCtrl &lt;= &quot;01000&quot;;  -- 04
+			when &quot;01&quot; =&gt;
+				ALUCtrl &lt;= &quot;01001&quot;;  -- 08
+			when &quot;10&quot; =&gt;
+				ALUCtrl &lt;= &quot;01010&quot;;  -- 16
+			when &quot;11&quot; =&gt;
+				ALUCtrl &lt;= &quot;00010&quot;;  -- 32
+			when others =&gt;
+               			ALUCtrl &lt;= &quot;11111&quot;;	
+		end case;
+
+            when &quot;01&quot; =&gt;  -- Branches (SUB)
+		case size is
+			when &quot;00&quot; =&gt; 
+				ALUCtrl &lt;= &quot;01100&quot;;  -- 04
+			when &quot;01&quot; =&gt;
+				ALUCtrl &lt;= &quot;01101&quot;;  -- 08
+			when &quot;10&quot; =&gt;
+				ALUCtrl &lt;= &quot;01110&quot;;  -- 16
+			when &quot;11&quot; =&gt;
+				ALUCtrl &lt;= &quot;00110&quot;;  -- 32
+			when others =&gt;
+               			ALUCtrl &lt;= &quot;11111&quot;;	
+		end case;
+
+            when &quot;10&quot; =&gt;  -- R-Type instructions
+                case funct3 is
+                    when &quot;000&quot; =&gt;  -- ADD or SUB
+                        if funct7_5 = &apos;0&apos; then
+				case size is
+					when &quot;00&quot; =&gt; 
+						ALUCtrl &lt;= &quot;01000&quot;;  -- 04
+					when &quot;01&quot; =&gt;
+						ALUCtrl &lt;= &quot;01001&quot;;  -- 08
+					when &quot;10&quot; =&gt;
+						ALUCtrl &lt;= &quot;01010&quot;;  -- 16
+					when &quot;11&quot; =&gt;
+						ALUCtrl &lt;= &quot;00010&quot;;  -- 32
+					when others =&gt;
+               					ALUCtrl &lt;= &quot;11111&quot;;	
+				end case;
+
+                        else
+                            case size is
+				when &quot;00&quot; =&gt; 
+					ALUCtrl &lt;= &quot;01100&quot;;  -- 04
+				when &quot;01&quot; =&gt;
+					ALUCtrl &lt;= &quot;01101&quot;;  -- 08
+				when &quot;10&quot; =&gt;
+					ALUCtrl &lt;= &quot;01110&quot;;  -- 16
+				when &quot;11&quot; =&gt;
+					ALUCtrl &lt;= &quot;00110&quot;;  -- 32
+				when others =&gt;
+               				ALUCtrl &lt;= &quot;11111&quot;;	
+			end case;
+                        end if;
+                    when &quot;111&quot; =&gt; ALUCtrl &lt;= &quot;00000&quot;; -- AND
+                    when &quot;110&quot; =&gt; ALUCtrl &lt;= &quot;00001&quot;; -- OR
+                    when &quot;100&quot; =&gt; ALUCtrl &lt;= &quot;00011&quot;; -- XOR
+                    when &quot;001&quot; =&gt; -- SLL
+			case size is
+				when &quot;00&quot; =&gt; 
+					ALUCtrl &lt;= &quot;10000&quot;;  -- 04
+				when &quot;01&quot; =&gt;
+					ALUCtrl &lt;= &quot;10001&quot;;  -- 08
+				when &quot;10&quot; =&gt;
+					ALUCtrl &lt;= &quot;10010&quot;;  -- 16
+				when &quot;11&quot; =&gt;
+					ALUCtrl &lt;= &quot;00100&quot;;  -- 32
+				when others =&gt;
+               				ALUCtrl &lt;= &quot;11111&quot;;	
+			end case;
+
+                    when &quot;101&quot; =&gt; -- SRL
+			case size is
+				when &quot;00&quot; =&gt; 
+					ALUCtrl &lt;= &quot;11000&quot;;  -- 04
+				when &quot;01&quot; =&gt;
+					ALUCtrl &lt;= &quot;11001&quot;;  -- 08
+				when &quot;10&quot; =&gt;
+					ALUCtrl &lt;= &quot;11010&quot;;  -- 16
+				when &quot;11&quot; =&gt;
+					ALUCtrl &lt;= &quot;00101&quot;;  -- 32
+				when others =&gt;
+               				ALUCtrl &lt;= &quot;11111&quot;;	
+			end case;
+
+                    when others =&gt;
+                        ALUCtrl &lt;= &quot;11111&quot;; -- Default / não definido
+                end case;
+
+            when &quot;11&quot; =&gt;  -- I-Type aritméticas e shifts imediatas
+                case funct3 is
+                    when &quot;000&quot; =&gt; 
+			case size is
+				when &quot;00&quot; =&gt; 
+					ALUCtrl &lt;= &quot;01000&quot;;  -- 04
+				when &quot;01&quot; =&gt;
+					ALUCtrl &lt;= &quot;01001&quot;;  -- 08
+				when &quot;10&quot; =&gt;
+					ALUCtrl &lt;= &quot;01010&quot;;  -- 16
+				when &quot;11&quot; =&gt;
+					ALUCtrl &lt;= &quot;00010&quot;;  -- 32
+				when others =&gt;
+               				ALUCtrl &lt;= &quot;11111&quot;;	
+			end case;
+
+                    when &quot;111&quot; =&gt; ALUCtrl &lt;= &quot;00000&quot;; -- ANDI
+                    when &quot;110&quot; =&gt; ALUCtrl &lt;= &quot;00001&quot;; -- ORI
+                    when &quot;100&quot; =&gt; ALUCtrl &lt;= &quot;00011&quot;; -- XORI
+                    when &quot;001&quot; =&gt; -- SLLI
+			case size is
+				when &quot;00&quot; =&gt; 
+					ALUCtrl &lt;= &quot;10000&quot;;  -- 04
+				when &quot;01&quot; =&gt;
+					ALUCtrl &lt;= &quot;10001&quot;;  -- 08
+				when &quot;10&quot; =&gt;
+					ALUCtrl &lt;= &quot;10010&quot;;  -- 16
+				when &quot;11&quot; =&gt;
+					ALUCtrl &lt;= &quot;00100&quot;;  -- 32
+				when others =&gt;
+               				 ALUCtrl &lt;= &quot;11111&quot;;	
+			end case;
+
+                    when &quot;101&quot; =&gt; -- SRLI
+			case size is
+				when &quot;00&quot; =&gt; 
+					ALUCtrl &lt;= &quot;11000&quot;;  -- 04
+				when &quot;01&quot; =&gt;
+					ALUCtrl &lt;= &quot;11001&quot;;  -- 08
+				when &quot;10&quot; =&gt;
+					ALUCtrl &lt;= &quot;11010&quot;;  -- 16
+				when &quot;11&quot; =&gt;
+					ALUCtrl &lt;= &quot;00101&quot;;  -- 32
+				when others =&gt;
+               				 ALUCtrl &lt;= &quot;11111&quot;;		
+			end case;
+
+                    when others =&gt;
+                        ALUCtrl &lt;= &quot;11111&quot;; -- Default / não definido
+                end case;
+
+            when others =&gt;
+                ALUCtrl &lt;= &quot;11111&quot;; -- Default / não definido
+        end case;
+    end process;
+end architecture;</string>
+        </entry>
+        <entry>
+          <string>externalOutputs</string>
+          <string>ALUCtrl:5</string>
+        </entry>
+        <entry>
+          <string>Width</string>
+          <int>8</int>
+        </entry>
+      </elementAttributes>
+      <pos x="740" y="280"/>
+    </visualElement>
+    <visualElement>
+      <elementName>In</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Label</string>
+          <string>AluOP</string>
+        </entry>
+        <entry>
+          <string>Bits</string>
+          <int>2</int>
+        </entry>
+      </elementAttributes>
+      <pos x="520" y="220"/>
+    </visualElement>
+    <visualElement>
+      <elementName>In</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Label</string>
+          <string>funct 3</string>
+        </entry>
+        <entry>
+          <string>Bits</string>
+          <int>3</int>
+        </entry>
+      </elementAttributes>
+      <pos x="520" y="320"/>
+    </visualElement>
+    <visualElement>
+      <elementName>In</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Label</string>
+          <string>funct7_5</string>
+        </entry>
+      </elementAttributes>
+      <pos x="520" y="440"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Out</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Label</string>
+          <string>Y</string>
+        </entry>
+        <entry>
+          <string>Bits</string>
+          <int>5</int>
+        </entry>
+      </elementAttributes>
+      <pos x="960" y="320"/>
+    </visualElement>
+    <visualElement>
+      <elementName>In</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Label</string>
+          <string>size</string>
+        </entry>
+        <entry>
+          <string>Bits</string>
+          <int>2</int>
+        </entry>
+      </elementAttributes>
+      <pos x="720" y="440"/>
+    </visualElement>
+  </visualElements>
+  <wires>
+    <wire>
+      <p1 x="520" y="320"/>
+      <p2 x="700" y="320"/>
+    </wire>
+    <wire>
+      <p1 x="900" y="320"/>
+      <p2 x="960" y="320"/>
+    </wire>
+    <wire>
+      <p1 x="660" y="340"/>
+      <p2 x="740" y="340"/>
+    </wire>
+    <wire>
+      <p1 x="520" y="440"/>
+      <p2 x="660" y="440"/>
+    </wire>
+    <wire>
+      <p1 x="720" y="440"/>
+      <p2 x="740" y="440"/>
+    </wire>
+    <wire>
+      <p1 x="700" y="300"/>
+      <p2 x="740" y="300"/>
+    </wire>
+    <wire>
+      <p1 x="520" y="220"/>
+      <p2 x="740" y="220"/>
+    </wire>
+    <wire>
+      <p1 x="740" y="220"/>
+      <p2 x="740" y="280"/>
+    </wire>
+    <wire>
+      <p1 x="740" y="360"/>
+      <p2 x="740" y="440"/>
+    </wire>
+    <wire>
+      <p1 x="660" y="340"/>
+      <p2 x="660" y="440"/>
+    </wire>
+    <wire>
+      <p1 x="700" y="300"/>
+      <p2 x="700" y="320"/>
+    </wire>
+  </wires>
+  <measurementOrdering/>
+</circuit>
