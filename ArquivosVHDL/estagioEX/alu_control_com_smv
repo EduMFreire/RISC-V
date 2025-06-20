@@ -1,0 +1,169 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity ALUControl is
+    port (
+        ALUOp  : in  std_logic_vector(1 downto 0);
+        funct3 : in  std_logic_vector(2 downto 0);
+        funct7_5: in std_logic;  -- bit 30 da instrução (funct7[5])
+	size : in std_logic_vector(1 downto 0); -- controle externo para operações vetoriais
+        ALUCtrl : out std_logic_vector(4 downto 0)
+    );
+end entity;
+
+architecture Behavioral of ALUControl is
+begin
+    process(ALUOp, funct3, funct7_5, size)
+    begin
+        case ALUOp is
+            when "00" =>  -- Loads, Stores, AUIPC (ADD)
+		case size is
+			when "00" => 
+				ALUCtrl <= "01000";  -- 04
+			when "01" =>
+				ALUCtrl <= "01001";  -- 08
+			when "10" =>
+				ALUCtrl <= "01010";  -- 16
+			when "11" =>
+				ALUCtrl <= "00010";  -- 32
+			when others =>
+               			ALUCtrl <= "11111";	
+		end case;
+
+            when "01" =>  -- Branches (SUB)
+		case size is
+			when "00" => 
+				ALUCtrl <= "01100";  -- 04
+			when "01" =>
+				ALUCtrl <= "01101";  -- 08
+			when "10" =>
+				ALUCtrl <= "01110";  -- 16
+			when "11" =>
+				ALUCtrl <= "00110";  -- 32
+			when others =>
+               			ALUCtrl <= "11111";	
+		end case;
+
+            when "10" =>  -- R-Type instructions
+                case funct3 is
+                    when "000" =>  -- ADD or SUB
+                        if funct7_5 = '0' then
+				case size is
+					when "00" => 
+						ALUCtrl <= "01000";  -- 04
+					when "01" =>
+						ALUCtrl <= "01001";  -- 08
+					when "10" =>
+						ALUCtrl <= "01010";  -- 16
+					when "11" =>
+						ALUCtrl <= "00010";  -- 32
+					when others =>
+               					ALUCtrl <= "11111";	
+				end case;
+
+                        else
+                            case size is
+				when "00" => 
+					ALUCtrl <= "01100";  -- 04
+				when "01" =>
+					ALUCtrl <= "01101";  -- 08
+				when "10" =>
+					ALUCtrl <= "01110";  -- 16
+				when "11" =>
+					ALUCtrl <= "00110";  -- 32
+				when others =>
+               				ALUCtrl <= "11111";	
+			end case;
+                        end if;
+                    when "111" => ALUCtrl <= "00000"; -- AND
+                    when "110" => ALUCtrl <= "00001"; -- OR
+                    when "100" => ALUCtrl <= "00011"; -- XOR
+                    when "001" => -- SLL
+			case size is
+				when "00" => 
+					ALUCtrl <= "10000";  -- 04
+				when "01" =>
+					ALUCtrl <= "10001";  -- 08
+				when "10" =>
+					ALUCtrl <= "10010";  -- 16
+				when "11" =>
+					ALUCtrl <= "00100";  -- 32
+				when others =>
+               				ALUCtrl <= "11111";	
+			end case;
+
+                    when "101" => -- SRL
+			case size is
+				when "00" => 
+					ALUCtrl <= "11000";  -- 04
+				when "01" =>
+					ALUCtrl <= "11001";  -- 08
+				when "10" =>
+					ALUCtrl <= "11010";  -- 16
+				when "11" =>
+					ALUCtrl <= "00101";  -- 32
+				when others =>
+               				ALUCtrl <= "11111";	
+			end case;
+
+                    when others =>
+                        ALUCtrl <= "11111"; -- Default / não definido
+                end case;
+
+            when "11" =>  -- I-Type aritméticas e shifts imediatas
+                case funct3 is
+                    when "000" => 
+			case size is
+				when "00" => 
+					ALUCtrl <= "01000";  -- 04
+				when "01" =>
+					ALUCtrl <= "01001";  -- 08
+				when "10" =>
+					ALUCtrl <= "01010";  -- 16
+				when "11" =>
+					ALUCtrl <= "00010";  -- 32
+				when others =>
+               				ALUCtrl <= "11111";	
+			end case;
+
+                    when "111" => ALUCtrl <= "00000"; -- ANDI
+                    when "110" => ALUCtrl <= "00001"; -- ORI
+                    when "100" => ALUCtrl <= "00011"; -- XORI
+                    when "001" => -- SLLI
+			case size is
+				when "00" => 
+					ALUCtrl <= "10000";  -- 04
+				when "01" =>
+					ALUCtrl <= "10001";  -- 08
+				when "10" =>
+					ALUCtrl <= "10010";  -- 16
+				when "11" =>
+					ALUCtrl <= "00100";  -- 32
+				when others =>
+               				 ALUCtrl <= "11111";	
+			end case;
+
+                    when "101" => -- SRLI
+			case size is
+				when "00" => 
+					ALUCtrl <= "11000";  -- 04
+				when "01" =>
+					ALUCtrl <= "11001";  -- 08
+				when "10" =>
+					ALUCtrl <= "11010";  -- 16
+				when "11" =>
+					ALUCtrl <= "00101";  -- 32
+				when others =>
+               				 ALUCtrl <= "11111";		
+			end case;
+
+                    when others =>
+                        ALUCtrl <= "11111"; -- Default / não definido
+                end case;
+
+            when others =>
+                ALUCtrl <= "11111"; -- Default / não definido
+        end case;
+    end process;
+end architecture;
