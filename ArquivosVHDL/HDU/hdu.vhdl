@@ -52,36 +52,40 @@ process(rs1, rs2, opcode, rd_IDEX, memRead_IDEX, jump)
     variable inst_type: integer;
 
     -- Temos dois tipos de hazard: DataHazard e ControlHazard
-    -- DataHazard ocorre em três situações: load-use, write-branch e load-branch
+    -- DataHazard ocorre em três situações: load-use, write-jump e load-jump
     -- ControlHazard ocorre em jump
 
-    -- inst_type = 1 indica que a instrução é jal, jalr, auipc, lui, ou seja, não está sujeita a DataHazard
+    -- inst_type = 1 indica que a instrução é jal, auipc, lui, ou seja, não está sujeita a DataHazard
 
     -- inst_type = 2 indica que a instrução é addi, andi, ori, xori, lli, srli, lw, sw, ou seja, está sujeita a DataHazard (load-use) apenas em rs1
 
     -- inst_type = 3 indica que a instrução é add, sub, and, or, xor, sll, srl, ou seja, está sujeita a DataHazard (load-use) em rs1 e rs2
 
-    -- inst_type = 4 indica que a instrução é beq, bne, ou seja, está sujeita a DataHazard (load-branch ou write-branch) em rs1 e rs2
+    -- inst_type = 4 indica que a instrução é jalr, ou seja, está sujeita a DataHazard (load-branch ou write-branch) apenas em rs1
+
+    -- inst_type = 5 indica que a instrução é beq, bne, ou seja, está sujeita a DataHazard (load-branch ou write-branch) em rs1 e rs2
 
     variable DataHazard: std_logic; -- Indica que há um DataHazard
 
 begin
     -- Identificar se a instução em ID é tipo 1, 2, ou 3
     case opcode is
-        when JAL_OP | JALR_OP | LUI_OP | AUIPC_OP =>
+        when JAL_OP | LUI_OP | AUIPC_OP =>
             inst_type := 1;
         when I_TYPE_OP | L_TYPE_OP | S_TYPE_OP =>
             inst_type := 2;
         when R_TYPE_OP =>
             inst_type := 3;
-        when B_TYPE_OP =>
+        when JALR_OP =>
             inst_type := 4;
+        when B_TYPE_OP =>
+            inst_type := 5;
         when others =>
             -- No caso de instrução inválida, vou considerar como tipo 1 (não suscetível a hazard de escrita-leitura)
             inst_type := 1;
     end case;
 
-    -- Identificar com base nisso se há hazard de escrita-leitura
+    -- Identificar com base nisso se há DataHazard
     case inst_type is            
         when 2 =>
             if memRead_IDEX = '1' and rd_IDEX = rs1 then
@@ -98,14 +102,29 @@ begin
             end if;
 
         when 4 =>
+            if regWrite_IDEX = '1' and rd_IDEX = rs1 then
+                DataHazard := '1'; -- write-jump
+
+            elsif memRead_IDEX = '1' and rd_IDEX = rs1 then
+                DataHazard := '1'; -- load-jump em IDEX
+            
+            elsif memRead_EXMEM = '1' and rd_EXMEM = rs1 then
+                DataHazard := '1'; -- load-jump em EXMEM
+            
+            else
+                DataHazard := '0';
+
+            end if;
+
+        when 5 =>
             if regWrite_IDEX = '1' and (rd_IDEX = rs1 or rd_IDEX = rs2) then
-                DataHazard := '1'; -- write-branch
+                DataHazard := '1'; -- write-jump
 
             elsif memRead_IDEX = '1' and (rd_IDEX = rs1 or rd_IDEX = rs2) then
-                DataHazard := '1'; -- load-branch em IDEX
+                DataHazard := '1'; -- load-jump em IDEX
 
             elsif memRead_EXMEM = '1' and (rd_EXMEM = rs1 or rd_EXMEM = rs2) then
-                DataHazard := '1'; -- load-branch em EXMEM
+                DataHazard := '1'; -- load-jump em EXMEM
             
             else
                 DataHazard := '0';
