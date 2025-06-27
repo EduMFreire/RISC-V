@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="utf-8"?>
+<circuit>
+  <version>2</version>
+  <attributes/>
+  <visualElements>
+    <visualElement>
+      <elementName>External</elementName>
+      <elementAttributes>
+        <entry>
+          <string>applicationType</string>
+          <appType>GHDL</appType>
+        </entry>
+        <entry>
+          <string>Label</string>
+          <string>vector_adder</string>
+        </entry>
+        <entry>
+          <string>externalInputs</string>
+          <string>A_i:32,B_i:32,mode_i,vecSize_i:2</string>
+        </entry>
+        <entry>
+          <string>Code</string>
+          <string>library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+entity vector_adder is
+    Port (
+        A_i       : in  std_logic_vector(31 downto 0);
+        B_i       : in  std_logic_vector(31 downto 0);
+        mode_i    : in  std_logic; -- &apos;0&apos; para soma, &apos;1&apos; para subtração
+        vecSize_i : in  std_logic_vector(1 downto 0); -- 00:4b, 01:8b, 10:16b, 11:32b
+        S_o       : out std_logic_vector(31 downto 0)
+    );
+end vector_adder;
+
+architecture Behavioral of vector_adder is
+    signal A_u, B_u     : unsigned(31 downto 0);
+    signal B_operand    : std_logic_vector(31 downto 0);
+    signal C            : std_logic_vector(8 downto 0);  -- carry entre blocos
+    signal S_temp       : unsigned(31 downto 0);
+    
+    -- Constantes para os tamanhos de bloco
+    constant BLOCK_4  : integer := 4;
+    constant BLOCK_8  : integer := 8;
+    constant BLOCK_16 : integer := 16;
+    constant BLOCK_32 : integer := 32;
+begin
+
+    -- Inverte B para subtração (complemento de 2)
+    B_operand &lt;= not B_i when mode_i = &apos;1&apos; else B_i;
+
+    A_u &lt;= unsigned(A_i);
+    B_u &lt;= unsigned(B_operand);
+
+    process(A_u, B_u, mode_i, vecSize_i)
+        variable blockSize : integer := 32;
+        variable numBlocks : integer := 1;
+        variable maxValue  : unsigned(31 downto 0);
+    begin
+        -- Determinar tamanho do bloco e número de blocos
+        case vecSize_i is
+            when &quot;00&quot; =&gt;  -- 4 bits
+                blockSize := BLOCK_4;
+                numBlocks := 8;
+                maxValue := to_unsigned(16, 32);  -- 2^4
+            when &quot;01&quot; =&gt;  -- 8 bits
+                blockSize := BLOCK_8;
+                numBlocks := 4;
+                maxValue := to_unsigned(256, 32);  -- 2^8
+            when &quot;10&quot; =&gt;  -- 16 bits
+                blockSize := BLOCK_16;
+                numBlocks := 2;
+                maxValue := to_unsigned(65536, 32);  -- 2^16
+            when others =&gt;  -- 32 bits
+                blockSize := BLOCK_32;
+                numBlocks := 1;
+                maxValue := (others =&gt; &apos;1&apos;);  -- Valor máximo não usado neste caso
+        end case;
+
+        -- Inicializa carry[0] com o modo (&apos;1&apos; para subtração)
+        C(0) &lt;= mode_i;
+
+        -- Realiza soma dos blocos com carry correspondente
+        for i in 0 to numBlocks - 1 loop
+            -- Verifica limites antes de acessar
+            if (i+1)*blockSize-1 &lt;= 31 then
+                -- Cálculo seguro sem exponenciação
+                S_temp((i+1)*blockSize - 1 downto i*blockSize) &lt;=
+                    A_u((i+1)*blockSize - 1 downto i*blockSize) +
+                    B_u((i+1)*blockSize - 1 downto i*blockSize) +
+                    unsigned&apos;(&quot;&quot; &amp; C(i));
+                
+                -- Gera carry para próximo bloco (sem usar exponenciação)
+                if blockSize &lt; 32 then
+                    if (A_u((i+1)*blockSize - 1 downto i*blockSize)) + 
+                       B_u((i+1)*blockSize - 1 downto i*blockSize) + 
+                       unsigned&apos;(&quot;&quot; &amp; C(i)) &gt;= maxValue then
+                        if i &lt; numBlocks - 1 then
+                            C(i+1) &lt;= &apos;1&apos;;
+                        end if;
+                    else
+                        if i &lt; numBlocks - 1 then
+                            C(i+1) &lt;= &apos;0&apos;;
+                        end if;
+                    end if;
+                end if;
+            end if;
+        end loop;
+
+        -- Zera blocos não utilizados
+        if numBlocks * blockSize &lt; 32 then
+            S_temp(31 downto numBlocks*blockSize) &lt;= (others =&gt; &apos;0&apos;);
+        end if;
+
+        S_o &lt;= std_logic_vector(S_temp);
+    end process;
+end Behavioral;</string>
+        </entry>
+        <entry>
+          <string>externalOutputs</string>
+          <string>S_o:32</string>
+        </entry>
+        <entry>
+          <string>Width</string>
+          <int>8</int>
+        </entry>
+      </elementAttributes>
+      <pos x="860" y="360"/>
+    </visualElement>
+    <visualElement>
+      <elementName>In</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Label</string>
+          <string>A</string>
+        </entry>
+        <entry>
+          <string>Bits</string>
+          <int>32</int>
+        </entry>
+        <entry>
+          <string>InDefault</string>
+          <value v="50" z="false"/>
+        </entry>
+      </elementAttributes>
+      <pos x="720" y="320"/>
+    </visualElement>
+    <visualElement>
+      <elementName>In</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Label</string>
+          <string>B</string>
+        </entry>
+        <entry>
+          <string>Bits</string>
+          <int>32</int>
+        </entry>
+        <entry>
+          <string>InDefault</string>
+          <value v="33" z="false"/>
+        </entry>
+      </elementAttributes>
+      <pos x="720" y="400"/>
+    </visualElement>
+    <visualElement>
+      <elementName>In</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Label</string>
+          <string>Size</string>
+        </entry>
+        <entry>
+          <string>Bits</string>
+          <int>2</int>
+        </entry>
+        <entry>
+          <string>InDefault</string>
+          <value v="2" z="false"/>
+        </entry>
+      </elementAttributes>
+      <pos x="720" y="560"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Out</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Label</string>
+          <string>result</string>
+        </entry>
+        <entry>
+          <string>Bits</string>
+          <int>32</int>
+        </entry>
+      </elementAttributes>
+      <pos x="1080" y="420"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Const</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Value</string>
+          <long>0</long>
+        </entry>
+      </elementAttributes>
+      <pos x="820" y="480"/>
+    </visualElement>
+  </visualElements>
+  <wires>
+    <wire>
+      <p1 x="720" y="320"/>
+      <p2 x="740" y="320"/>
+    </wire>
+    <wire>
+      <p1 x="720" y="400"/>
+      <p2 x="740" y="400"/>
+    </wire>
+    <wire>
+      <p1 x="1020" y="400"/>
+      <p2 x="1080" y="400"/>
+    </wire>
+    <wire>
+      <p1 x="780" y="400"/>
+      <p2 x="840" y="400"/>
+    </wire>
+    <wire>
+      <p1 x="720" y="560"/>
+      <p2 x="840" y="560"/>
+    </wire>
+    <wire>
+      <p1 x="740" y="340"/>
+      <p2 x="860" y="340"/>
+    </wire>
+    <wire>
+      <p1 x="820" y="420"/>
+      <p2 x="860" y="420"/>
+    </wire>
+    <wire>
+      <p1 x="740" y="360"/>
+      <p2 x="780" y="360"/>
+    </wire>
+    <wire>
+      <p1 x="840" y="440"/>
+      <p2 x="860" y="440"/>
+    </wire>
+    <wire>
+      <p1 x="840" y="380"/>
+      <p2 x="860" y="380"/>
+    </wire>
+    <wire>
+      <p1 x="740" y="320"/>
+      <p2 x="740" y="340"/>
+    </wire>
+    <wire>
+      <p1 x="740" y="360"/>
+      <p2 x="740" y="400"/>
+    </wire>
+    <wire>
+      <p1 x="820" y="420"/>
+      <p2 x="820" y="480"/>
+    </wire>
+    <wire>
+      <p1 x="1080" y="400"/>
+      <p2 x="1080" y="420"/>
+    </wire>
+    <wire>
+      <p1 x="840" y="380"/>
+      <p2 x="840" y="400"/>
+    </wire>
+    <wire>
+      <p1 x="840" y="440"/>
+      <p2 x="840" y="560"/>
+    </wire>
+    <wire>
+      <p1 x="860" y="340"/>
+      <p2 x="860" y="360"/>
+    </wire>
+    <wire>
+      <p1 x="780" y="360"/>
+      <p2 x="780" y="400"/>
+    </wire>
+  </wires>
+  <measurementOrdering/>
+</circuit>
