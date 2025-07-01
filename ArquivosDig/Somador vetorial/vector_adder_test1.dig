@@ -1,0 +1,395 @@
+<?xml version="1.0" encoding="utf-8"?>
+<circuit>
+  <version>2</version>
+  <attributes/>
+  <visualElements>
+    <visualElement>
+      <elementName>External</elementName>
+      <elementAttributes>
+        <entry>
+          <string>applicationType</string>
+          <appType>GHDL</appType>
+        </entry>
+        <entry>
+          <string>Label</string>
+          <string>vector_adder</string>
+        </entry>
+        <entry>
+          <string>externalInputs</string>
+          <string>A_i:32,B_i:32,mode_i,vecSize_i:2</string>
+        </entry>
+        <entry>
+          <string>Code</string>
+          <string>-- Ideia
+-- Ter 8 somadores de 4 bits com carry lookahead. Assim, o carry se propaga de 4 em 4 em vez de se propagar de 1 em 1
+-- Ao instanciar os somadores, propagar carry apenas no meio dos blocos (dependendo de vecSize_i). No início dos blocos, colocar carry &apos;0&apos; para adição. Para subtração, inverter todos os bits de B, e colocar carry &apos;1&apos; no início de cada bloco.
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity vector_adder is
+    Port(
+        A_i       : in  std_logic_vector(31 downto 0);
+        B_i       : in  std_logic_vector(31 downto 0);
+        mode_i    : in  std_logic; -- &apos;0&apos; para soma, &apos;1&apos; para subtração
+        vecSize_i : in  std_logic_vector(1 downto 0); -- 00:4b, 01:8b, 10:16b, 11:32b
+
+        S_o       : out std_logic_vector(31 downto 0)
+    );
+end vector_adder;
+
+architecture Behavioral of vector_adder is
+    signal not_B: std_logic_vector(31 downto 0);
+    signal carry: std_logic_vector(8 downto 0); -- O último carry é descartado
+
+    component adder4 is
+        Port(
+            A: in std_logic_vector(3 downto 0);
+            B: in std_logic_vector(3 downto 0);
+            Cin: in std_logic;
+
+            S: out std_logic_vector(3 downto 0);
+            Cout: out std_logic
+        );
+    end component;
+
+begin
+    not_B &lt;= not(B_i); -- Calculado uma vez só, para não ser necessário um conjunto de portas not por somador
+
+    -- Instanciar os 8 somadores
+    adder_generate: for i in 0 to 7 generate
+
+        signal prop: std_logic;
+        signal actual_carry: std_logic;
+        signal B: std_logic_vector(3 downto 0);
+
+    begin
+        -- Propagar carry apenas no meio dos blocos
+        prop &lt;=
+            &apos;1&apos; when
+                ((vecSize_i = &quot;00&quot;) and (i mod 4 /= 0)) or
+                ((vecSize_i = &quot;01&quot;) and (i mod 8 /= 0)) or
+                ((vecSize_i = &quot;10&quot;) and (i mod 16 /= 0)) or
+                ((vecSize_i = &quot;11&quot;) and (i /= 0))
+            else &apos;0&apos;;
+
+        -- No meio dos blocos, propagamos carry. No início dos blocos, colocamos carry &apos;0&apos; para soma e carry &apos;1&apos; para subtração (complemento de 2)
+        actual_carry &lt;=
+            carry(i) when prop = &apos;1&apos;
+            else mode_i;
+
+        B &lt;=
+            B_i(4*i+3 downto 4*i) when mode_i = &apos;0&apos;
+            else not_B(4*i+3 downto 4*i);
+
+        adder: adder4
+        port map(
+            A =&gt; A_i(4*i+3 downto 4*i),
+
+            B =&gt; B,
+            
+            Cin =&gt; actual_carry,
+            
+            S =&gt; S_o(4*i+3 downto 4*i),
+
+            Cout =&gt; carry(i+1)
+        );
+    end generate;
+
+end Behavioral;
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity adder4 is
+    Port(
+        A: in std_logic_vector(3 downto 0);
+        B: in std_logic_vector(3 downto 0);
+        Cin: in std_logic;
+
+        S: out std_logic_vector(3 downto 0);
+        Cout: out std_logic
+    );
+end adder4;
+
+architecture arch of adder4 is
+
+    signal prop: std_logic_vector(3 downto 0);
+    signal gen: std_logic_vector(3 downto 0);
+    signal carry: std_logic_vector(3 downto 0);
+
+begin
+
+    signals_generate: for i in 0 to 3 generate
+        prop(i) &lt;= A(i) xor B(i);
+        gen(i) &lt;= A(i) and B(i);
+    end generate;
+
+    -- Carry lookahead
+    carry(0) &lt;= Cin;
+    carry(1) &lt;= gen(0) or (prop(0) and Cin);
+
+    carry(2) &lt;= gen(1) or (prop(1) and gen(0)) or (prop(1) and prop(0) and Cin);
+
+    carry(3) &lt;= gen(2) or (prop(2) and gen(1)) or (prop(2) and prop(1) and gen(0)) or (prop(2) and prop(1) and prop(0) and Cin);
+
+    Cout &lt;= gen(3) or (prop(3) and gen(2)) or (prop(3) and prop(2) and gen(1)) or (prop(3) and prop(2) and prop(1) and gen(0)) or (prop(3) and prop(2) and prop(1) and prop(0) and Cin);
+
+    sum_generate: for i in 0 to 3 generate
+        S(i) &lt;= prop(i) xor carry(i);
+    end generate;
+
+end arch;</string>
+        </entry>
+        <entry>
+          <string>externalOutputs</string>
+          <string>S_o:32</string>
+        </entry>
+        <entry>
+          <string>Width</string>
+          <int>6</int>
+        </entry>
+      </elementAttributes>
+      <pos x="620" y="200"/>
+    </visualElement>
+    <visualElement>
+      <elementName>In</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Label</string>
+          <string>A</string>
+        </entry>
+        <entry>
+          <string>Bits</string>
+          <int>32</int>
+        </entry>
+      </elementAttributes>
+      <pos x="560" y="180"/>
+    </visualElement>
+    <visualElement>
+      <elementName>In</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Label</string>
+          <string>B</string>
+        </entry>
+        <entry>
+          <string>Bits</string>
+          <int>32</int>
+        </entry>
+      </elementAttributes>
+      <pos x="560" y="240"/>
+    </visualElement>
+    <visualElement>
+      <elementName>In</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Label</string>
+          <string>mode</string>
+        </entry>
+      </elementAttributes>
+      <pos x="560" y="360"/>
+    </visualElement>
+    <visualElement>
+      <elementName>In</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Label</string>
+          <string>vecSize</string>
+        </entry>
+        <entry>
+          <string>Bits</string>
+          <int>2</int>
+        </entry>
+      </elementAttributes>
+      <pos x="560" y="420"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Out</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Label</string>
+          <string>S</string>
+        </entry>
+        <entry>
+          <string>Bits</string>
+          <int>32</int>
+        </entry>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="3"/>
+        </entry>
+      </elementAttributes>
+      <pos x="760" y="320"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Splitter</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Input Splitting</string>
+          <string>32</string>
+        </entry>
+        <entry>
+          <string>Output Splitting</string>
+          <string>4,4,8,16</string>
+        </entry>
+      </elementAttributes>
+      <pos x="800" y="240"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Out</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Label</string>
+          <string>S_3to0</string>
+        </entry>
+        <entry>
+          <string>Bits</string>
+          <int>4</int>
+        </entry>
+      </elementAttributes>
+      <pos x="860" y="200"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Out</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Label</string>
+          <string>S_7to4</string>
+        </entry>
+        <entry>
+          <string>Bits</string>
+          <int>4</int>
+        </entry>
+      </elementAttributes>
+      <pos x="860" y="260"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Out</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Label</string>
+          <string>S_15to8</string>
+        </entry>
+        <entry>
+          <string>Bits</string>
+          <int>8</int>
+        </entry>
+      </elementAttributes>
+      <pos x="860" y="320"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Out</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Label</string>
+          <string>S_31to16</string>
+        </entry>
+        <entry>
+          <string>Bits</string>
+          <int>16</int>
+        </entry>
+      </elementAttributes>
+      <pos x="860" y="380"/>
+    </visualElement>
+  </visualElements>
+  <wires>
+    <wire>
+      <p1 x="560" y="240"/>
+      <p2 x="580" y="240"/>
+    </wire>
+    <wire>
+      <p1 x="740" y="240"/>
+      <p2 x="760" y="240"/>
+    </wire>
+    <wire>
+      <p1 x="820" y="240"/>
+      <p2 x="840" y="240"/>
+    </wire>
+    <wire>
+      <p1 x="760" y="240"/>
+      <p2 x="800" y="240"/>
+    </wire>
+    <wire>
+      <p1 x="840" y="320"/>
+      <p2 x="860" y="320"/>
+    </wire>
+    <wire>
+      <p1 x="560" y="180"/>
+      <p2 x="580" y="180"/>
+    </wire>
+    <wire>
+      <p1 x="580" y="260"/>
+      <p2 x="620" y="260"/>
+    </wire>
+    <wire>
+      <p1 x="820" y="260"/>
+      <p2 x="860" y="260"/>
+    </wire>
+    <wire>
+      <p1 x="560" y="420"/>
+      <p2 x="600" y="420"/>
+    </wire>
+    <wire>
+      <p1 x="580" y="200"/>
+      <p2 x="620" y="200"/>
+    </wire>
+    <wire>
+      <p1 x="840" y="200"/>
+      <p2 x="860" y="200"/>
+    </wire>
+    <wire>
+      <p1 x="560" y="360"/>
+      <p2 x="580" y="360"/>
+    </wire>
+    <wire>
+      <p1 x="600" y="280"/>
+      <p2 x="620" y="280"/>
+    </wire>
+    <wire>
+      <p1 x="820" y="280"/>
+      <p2 x="840" y="280"/>
+    </wire>
+    <wire>
+      <p1 x="580" y="220"/>
+      <p2 x="620" y="220"/>
+    </wire>
+    <wire>
+      <p1 x="820" y="380"/>
+      <p2 x="860" y="380"/>
+    </wire>
+    <wire>
+      <p1 x="580" y="180"/>
+      <p2 x="580" y="200"/>
+    </wire>
+    <wire>
+      <p1 x="580" y="220"/>
+      <p2 x="580" y="240"/>
+    </wire>
+    <wire>
+      <p1 x="580" y="260"/>
+      <p2 x="580" y="360"/>
+    </wire>
+    <wire>
+      <p1 x="820" y="300"/>
+      <p2 x="820" y="380"/>
+    </wire>
+    <wire>
+      <p1 x="600" y="280"/>
+      <p2 x="600" y="420"/>
+    </wire>
+    <wire>
+      <p1 x="760" y="240"/>
+      <p2 x="760" y="320"/>
+    </wire>
+    <wire>
+      <p1 x="840" y="200"/>
+      <p2 x="840" y="240"/>
+    </wire>
+    <wire>
+      <p1 x="840" y="280"/>
+      <p2 x="840" y="320"/>
+    </wire>
+  </wires>
+  <measurementOrdering/>
+</circuit>

@@ -3,3 +3,9 @@ Referência das instruções:
 
 Assembly para RISC-V e RISC-V para assembly
     https://luplab.gitlab.io/rvcodecjs
+
+Referência sobre carry lookahead:
+    https://www.geeksforgeeks.org/digital-logic/carry-look-ahead-adder/
+
+Guia do GHDL:
+    https://ghdl-rad.readthedocs.io/en/stable/using/QuickStartGuide.html
