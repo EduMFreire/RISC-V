@@ -45,10 +45,11 @@ begin
         -- Propagar carry apenas no meio dos blocos
         prop <=
             '1' when
-                ((vecSize_i = "00") and (i mod 4 /= 0)) or
-                ((vecSize_i = "01") and (i mod 8 /= 0)) or
-                ((vecSize_i = "10") and (i mod 16 /= 0)) or
-                ((vecSize_i = "11") and (i /= 0))
+                ((vecSize_i = "01") and (i mod 2 /= 0)) or -- Blocos de 8, os adders se juntam de 2 em 2
+                ((vecSize_i = "10") and (i mod 4 /= 0)) or -- Blocos de 16, os adders se juntam de 4 em 4
+                ((vecSize_i = "11") and (i /= 0)) -- Bloco de 32, todos os 8 adders se juntam
+
+                -- com vecSize_i = "00", não há propagação
             else '0';
 
         -- No meio dos blocos, propagamos carry. No início dos blocos, colocamos carry '0' para soma e carry '1' para subtração (complemento de 2)
