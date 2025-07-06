@@ -67,10 +67,11 @@ begin
         -- Propagar carry apenas no meio dos blocos
         prop &lt;=
             &apos;1&apos; when
-                ((vecSize_i = &quot;00&quot;) and (i mod 4 /= 0)) or
-                ((vecSize_i = &quot;01&quot;) and (i mod 8 /= 0)) or
-                ((vecSize_i = &quot;10&quot;) and (i mod 16 /= 0)) or
-                ((vecSize_i = &quot;11&quot;) and (i /= 0))
+                ((vecSize_i = &quot;01&quot;) and (i mod 2 /= 0)) or -- Blocos de 8, os adders se juntam de 2 em 2
+                ((vecSize_i = &quot;10&quot;) and (i mod 4 /= 0)) or -- Blocos de 16, os adders se juntam de 4 em 4
+                ((vecSize_i = &quot;11&quot;) and (i /= 0)) -- Bloco de 32, todos os 8 adders se juntam
+
+                -- com vecSize_i = &quot;00&quot;, não há propagação
             else &apos;0&apos;;
 
         -- No meio dos blocos, propagamos carry. No início dos blocos, colocamos carry &apos;0&apos; para soma e carry &apos;1&apos; para subtração (complemento de 2)
@@ -205,24 +206,6 @@ end arch;</string>
       <pos x="560" y="420"/>
     </visualElement>
     <visualElement>
-      <elementName>Out</elementName>
-      <elementAttributes>
-        <entry>
-          <string>Label</string>
-          <string>S</string>
-        </entry>
-        <entry>
-          <string>Bits</string>
-          <int>32</int>
-        </entry>
-        <entry>
-          <string>rotation</string>
-          <rotation rotation="3"/>
-        </entry>
-      </elementAttributes>
-      <pos x="760" y="320"/>
-    </visualElement>
-    <visualElement>
       <elementName>Splitter</elementName>
       <elementAttributes>
         <entry>
@@ -292,6 +275,24 @@ end arch;</string>
       </elementAttributes>
       <pos x="860" y="380"/>
     </visualElement>
+    <visualElement>
+      <elementName>Out</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Label</string>
+          <string>S</string>
+        </entry>
+        <entry>
+          <string>Bits</string>
+          <int>32</int>
+        </entry>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+      </elementAttributes>
+      <pos x="740" y="400"/>
+    </visualElement>
   </visualElements>
   <wires>
     <wire>
@@ -313,6 +314,10 @@ end arch;</string>
     <wire>
       <p1 x="840" y="320"/>
       <p2 x="860" y="320"/>
+    </wire>
+    <wire>
+      <p1 x="740" y="400"/>
+      <p2 x="760" y="400"/>
     </wire>
     <wire>
       <p1 x="560" y="180"/>
@@ -379,16 +384,16 @@ end arch;</string>
       <p2 x="600" y="420"/>
     </wire>
     <wire>
-      <p1 x="760" y="240"/>
-      <p2 x="760" y="320"/>
-    </wire>
-    <wire>
       <p1 x="840" y="200"/>
       <p2 x="840" y="240"/>
     </wire>
     <wire>
       <p1 x="840" y="280"/>
       <p2 x="840" y="320"/>
+    </wire>
+    <wire>
+      <p1 x="760" y="240"/>
+      <p2 x="760" y="400"/>
     </wire>
   </wires>
   <measurementOrdering/>
