@@ -1,0 +1,846 @@
+<?xml version="1.0" encoding="utf-8"?>
+<circuit>
+  <version>2</version>
+  <attributes/>
+  <visualElements>
+    <visualElement>
+      <elementName>External</elementName>
+      <elementAttributes>
+        <entry>
+          <string>applicationType</string>
+          <appType>GHDL</appType>
+        </entry>
+        <entry>
+          <string>Label</string>
+          <string>alu_combinational</string>
+        </entry>
+        <entry>
+          <string>externalInputs</string>
+          <string>a_in:32,b_in:32,c_in:4</string>
+        </entry>
+        <entry>
+          <string>Code</string>
+          <string>library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+entity alu_combinational is
+    Port (
+        a_in            : in  std_logic_vector(31 downto 0);
+        b_in            : in  std_logic_vector(31 downto 0);
+        c_in            : in  std_logic_vector(3 downto 0);
+        result_out      : out std_logic_vector(31 downto 0);
+        zero_flag_out   : out std_logic
+    );
+end alu_combinational;
+
+architecture Behavioral of alu_combinational is
+
+constant ALL_ZEROS_32 : std_logic_vector(31 downto 0) := (others =&gt; &apos;0&apos;);
+
+begin
+
+    process(a_in, b_in, c_in)
+        variable temp_result : std_logic_vector(31 downto 0);
+    begin
+        -- Initialize temp_result for safety (though not strictly necessary for full case coverage)
+        temp_result := (others =&gt; &apos;0&apos;);
+
+        case c_in is
+            when &quot;0000&quot; =&gt;
+                temp_result := a_in and b_in;
+            when &quot;0001&quot; =&gt;
+                temp_result := a_in or b_in;
+            when &quot;0011&quot; =&gt;
+                temp_result := a_in xor b_in;
+            when &quot;0010&quot; =&gt;
+                temp_result := std_logic_vector(unsigned(a_in) + unsigned(b_in));
+            when &quot;0110&quot; =&gt;
+                -- For subtraction, ensure both operands are treated as unsigned for consistent arithmetic.
+                -- If signed subtraction is intended, use signed types for both a_in and b_in.
+                temp_result := std_logic_vector(unsigned(a_in) - unsigned(b_in));
+            when &quot;0100&quot; =&gt;
+                -- For shift operations, the shift amount should be an integer,
+                -- and using &apos;unsigned&apos; directly on the slice ensures proper conversion.
+                temp_result := std_logic_vector(shift_left(unsigned(a_in), to_integer(unsigned(b_in(4 downto 0)))));
+            when &quot;0101&quot; =&gt;
+                temp_result := std_logic_vector(shift_right(unsigned(a_in), to_integer(unsigned(b_in(4 downto 0)))));
+            when others =&gt;
+                temp_result := (others =&gt; &apos;0&apos;); -- Default or undefined operation
+        end case;
+
+        -- Assign the calculated temporary result to the output signal
+        result_out &lt;= temp_result;
+
+        -- Determine the zero flag based on the calculated result
+        if temp_result = ALL_ZEROS_32 then
+            zero_flag_out &lt;= &apos;1&apos;;
+        else
+            zero_flag_out &lt;= &apos;0&apos;;
+        end if;
+
+    end process;
+
+end Behavioral;</string>
+        </entry>
+        <entry>
+          <string>Width</string>
+          <int>9</int>
+        </entry>
+        <entry>
+          <string>externalOutputs</string>
+          <string>result_out:32,zero_flag_out</string>
+        </entry>
+      </elementAttributes>
+      <pos x="560" y="360"/>
+    </visualElement>
+    <visualElement>
+      <elementName>In</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Label</string>
+          <string>a</string>
+        </entry>
+        <entry>
+          <string>Bits</string>
+          <int>32</int>
+        </entry>
+      </elementAttributes>
+      <pos x="380" y="380"/>
+    </visualElement>
+    <visualElement>
+      <elementName>In</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Label</string>
+          <string>b</string>
+        </entry>
+        <entry>
+          <string>Bits</string>
+          <int>32</int>
+        </entry>
+      </elementAttributes>
+      <pos x="380" y="480"/>
+    </visualElement>
+    <visualElement>
+      <elementName>In</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Label</string>
+          <string>c</string>
+        </entry>
+        <entry>
+          <string>Bits</string>
+          <int>5</int>
+        </entry>
+      </elementAttributes>
+      <pos x="380" y="580"/>
+    </visualElement>
+    <visualElement>
+      <elementName>External</elementName>
+      <elementAttributes>
+        <entry>
+          <string>applicationType</string>
+          <appType>GHDL</appType>
+        </entry>
+        <entry>
+          <string>Label</string>
+          <string>vector_adder</string>
+        </entry>
+        <entry>
+          <string>externalInputs</string>
+          <string>A_i:32,B_i:32,mode_i,vecSize_i:2</string>
+        </entry>
+        <entry>
+          <string>Code</string>
+          <string>-- Ideia
+-- Ter 8 somadores de 4 bits com carry lookahead. Assim, o carry se propaga de 4 em 4 em vez de se propagar de 1 em 1
+-- Ao instanciar os somadores, propagar carry apenas no meio dos blocos (dependendo de vecSize_i). No início dos blocos, colocar carry &apos;0&apos; para adição. Para subtração, inverter todos os bits de B, e colocar carry &apos;1&apos; no início de cada bloco.
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity vector_adder is
+    Port(
+        A_i       : in  std_logic_vector(31 downto 0);
+        B_i       : in  std_logic_vector(31 downto 0);
+        mode_i    : in  std_logic; -- &apos;0&apos; para soma, &apos;1&apos; para subtração
+        vecSize_i : in  std_logic_vector(1 downto 0); -- 00:4b, 01:8b, 10:16b, 11:32b
+        S_o       : out std_logic_vector(31 downto 0);
+	zero_out  : out std_logic
+    );
+end vector_adder;
+
+architecture Behavioral of vector_adder is
+    signal not_B: std_logic_vector(31 downto 0);
+    signal carry: std_logic_vector(8 downto 0); -- O último carry é descartado
+
+    component adder4 is
+        Port(
+            A: in std_logic_vector(3 downto 0);
+            B: in std_logic_vector(3 downto 0);
+            Cin: in std_logic;
+
+            S: out std_logic_vector(3 downto 0);
+            Cout: out std_logic
+        );
+    end component;
+
+begin
+    not_B &lt;= not(B_i); -- Calculado uma vez só, para não ser necessário um conjunto de portas not por somador
+
+    -- Instanciar os 8 somadores
+    adder_generate: for i in 0 to 7 generate
+
+        signal prop: std_logic;
+        signal actual_carry: std_logic;
+        signal B: std_logic_vector(3 downto 0);
+
+    begin
+        -- Propagar carry apenas no meio dos blocos
+        prop &lt;=
+            &apos;1&apos; when
+                ((vecSize_i = &quot;01&quot;) and (i mod 2 /= 0)) or -- Blocos de 8, os adders se juntam de 2 em 2
+                ((vecSize_i = &quot;10&quot;) and (i mod 4 /= 0)) or -- Blocos de 16, os adders se juntam de 4 em 4
+                ((vecSize_i = &quot;11&quot;) and (i /= 0)) -- Bloco de 32, todos os 8 adders se juntam
+
+                -- com vecSize_i = &quot;00&quot;, não há propagação
+            else &apos;0&apos;;
+
+        -- No meio dos blocos, propagamos carry. No início dos blocos, colocamos carry &apos;0&apos; para soma e carry &apos;1&apos; para subtração (complemento de 2)
+        actual_carry &lt;=
+            carry(i) when prop = &apos;1&apos;
+            else mode_i;
+
+        B &lt;=
+            B_i(4*i+3 downto 4*i) when mode_i = &apos;0&apos;
+            else not_B(4*i+3 downto 4*i);
+
+        adder: adder4
+        port map(
+            A =&gt; A_i(4*i+3 downto 4*i),
+
+            B =&gt; B,
+            
+            Cin =&gt; actual_carry,
+            
+            S =&gt; S_o(4*i+3 downto 4*i),
+
+            Cout =&gt; carry(i+1)
+        );
+    end generate;
+
+	process(S_o)
+    	begin
+        	if S_o = X&quot;00000000&quot; then
+    			zero_out &lt;= &apos;1&apos;;
+		else
+    			zero_out &lt;= &apos;0&apos;;
+		end if;
+        end process;
+
+	
+end Behavioral;
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity adder4 is
+    Port(
+        A: in std_logic_vector(3 downto 0);
+        B: in std_logic_vector(3 downto 0);
+        Cin: in std_logic;
+
+        S: out std_logic_vector(3 downto 0);
+        Cout: out std_logic
+    );
+end adder4;
+
+architecture arch of adder4 is
+
+    signal prop: std_logic_vector(3 downto 0);
+    signal gen: std_logic_vector(3 downto 0);
+    signal carry: std_logic_vector(3 downto 0);
+
+begin
+
+    signals_generate: for i in 0 to 3 generate
+        prop(i) &lt;= A(i) xor B(i);
+        gen(i) &lt;= A(i) and B(i);
+    end generate;
+
+    -- Carry lookahead
+    carry(0) &lt;= Cin;
+    carry(1) &lt;= gen(0) or (prop(0) and Cin);
+
+    carry(2) &lt;= gen(1) or (prop(1) and gen(0)) or (prop(1) and prop(0) and Cin);
+
+    carry(3) &lt;= gen(2) or (prop(2) and gen(1)) or (prop(2) and prop(1) and gen(0)) or (prop(2) and prop(1) and prop(0) and Cin);
+
+    Cout &lt;= gen(3) or (prop(3) and gen(2)) or (prop(3) and prop(2) and gen(1)) or (prop(3) and prop(2) and prop(1) and gen(0)) or (prop(3) and prop(2) and prop(1) and prop(0) and Cin);
+
+    sum_generate: for i in 0 to 3 generate
+        S(i) &lt;= prop(i) xor carry(i);
+    end generate;
+
+end arch;</string>
+        </entry>
+        <entry>
+          <string>externalOutputs</string>
+          <string>S_o:32,zero_out</string>
+        </entry>
+        <entry>
+          <string>Width</string>
+          <int>6</int>
+        </entry>
+      </elementAttributes>
+      <pos x="600" y="460"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Splitter</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Input Splitting</string>
+          <string>5</string>
+        </entry>
+        <entry>
+          <string>Output Splitting</string>
+          <string>2,1,1,1</string>
+        </entry>
+      </elementAttributes>
+      <pos x="420" y="580"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Multiplexer</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Selector Bits</string>
+          <int>2</int>
+        </entry>
+        <entry>
+          <string>Bits</string>
+          <int>32</int>
+        </entry>
+      </elementAttributes>
+      <pos x="940" y="380"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Out</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Label</string>
+          <string>result_out</string>
+        </entry>
+        <entry>
+          <string>Bits</string>
+          <int>32</int>
+        </entry>
+      </elementAttributes>
+      <pos x="1060" y="420"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Out</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Label</string>
+          <string>zero_out</string>
+        </entry>
+      </elementAttributes>
+      <pos x="1060" y="560"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Splitter</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Input Splitting</string>
+          <string>5</string>
+        </entry>
+        <entry>
+          <string>Output Splitting</string>
+          <string>4</string>
+        </entry>
+      </elementAttributes>
+      <pos x="440" y="520"/>
+    </visualElement>
+    <visualElement>
+      <elementName>External</elementName>
+      <elementAttributes>
+        <entry>
+          <string>applicationType</string>
+          <appType>GHDL</appType>
+        </entry>
+        <entry>
+          <string>Label</string>
+          <string>vector_shifter</string>
+        </entry>
+        <entry>
+          <string>externalInputs</string>
+          <string>A_i:32,B_i:32,mode_i,vecSize_i:2</string>
+        </entry>
+        <entry>
+          <string>Code</string>
+          <string>library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+entity vector_shifter is
+    Port(
+        A_i       : in  std_logic_vector(31 downto 0);
+        B_i       : in  std_logic_vector(31 downto 0);  -- rs2 ou imediato
+        mode_i    : in  std_logic;                      -- &apos;0&apos; = shift left, &apos;1&apos; = shift right
+        vecSize_i : in  std_logic_vector(1 downto 0);   -- 00:4b, 01:8b, 10:16b, 11:32b
+        S_o       : out std_logic_vector(31 downto 0);
+	zero_out  : out std_logic
+    );
+end vector_shifter;
+
+architecture Behavioral of vector_shifter is
+
+    signal result : std_logic_vector(31 downto 0);
+    signal shamt  : std_logic_vector(4 downto 0);
+    signal shamt_int : integer;
+    constant ALL_ZEROS_32 : std_logic_vector(31 downto 0) := (others =&gt; &apos;0&apos;);
+
+begin
+
+    -- Pega os 5 LSBs do B_i como shift amount
+    shamt &lt;= B_i(4 downto 0);
+    shamt_int &lt;= to_integer(unsigned(shamt));
+
+    -- Processo único com geradores internos para diferentes tamanhos de vetores
+    process(A_i, shamt_int, mode_i, vecSize_i)
+        variable temp_result : std_logic_vector(31 downto 0);
+	variable segment4 : std_logic_vector(3 downto 0);
+    	variable segment8 : std_logic_vector(7 downto 0);
+    	variable segment16 : std_logic_vector(15 downto 0);
+    begin
+        temp_result := (others =&gt; &apos;0&apos;);
+
+        case vecSize_i is
+
+            when &quot;00&quot; =&gt;  -- 4-bit vetores (8 grupos)
+                gen4: for i in 0 to 7 loop
+		if shamt_int &gt;= 4 then
+            		segment4 := (others =&gt; &apos;0&apos;);
+		else
+                    if mode_i = &apos;0&apos; then
+                        segment4 := std_logic_vector(shift_left(unsigned(A_i(4*i+3 downto 4*i)), shamt_int mod 4));
+                    else
+                        segment4 := std_logic_vector(shift_right(unsigned(A_i(4*i+3 downto 4*i)), shamt_int mod 4));
+                    end if;
+		end if;
+                    temp_result(4*i+3 downto 4*i) := segment4;
+                end loop;
+
+            when &quot;01&quot; =&gt;  -- 8-bit vetores (4 grupos)
+                gen8: for i in 0 to 3 loop
+                    if mode_i = &apos;0&apos; then
+                        segment8 := std_logic_vector(shift_left(unsigned(A_i(8*i+7 downto 8*i)), shamt_int mod 8));
+                    else
+                        segment8 := std_logic_vector(shift_right(unsigned(A_i(8*i+7 downto 8*i)), shamt_int mod 8));
+                    end if;
+                    temp_result(8*i+7 downto 8*i) := segment8;
+                end loop;
+
+            when &quot;10&quot; =&gt;  -- 16-bit vetores (2 grupos)
+                gen16: for i in 0 to 1 loop
+                    if mode_i = &apos;0&apos; then
+                        segment16 := std_logic_vector(shift_left(unsigned(A_i(16*i+15 downto 16*i)), shamt_int mod 16));
+                    else
+                        segment16 := std_logic_vector(shift_right(unsigned(A_i(16*i+15 downto 16*i)), shamt_int mod 16));
+                    end if;
+                    temp_result(16*i+15 downto 16*i) := segment16;
+                end loop;
+
+            when others =&gt;  -- 32-bit vetor (1 grupo)
+                if mode_i = &apos;0&apos; then
+                    temp_result := std_logic_vector(shift_left(unsigned(A_i), shamt_int mod 32));
+                else
+                    temp_result := std_logic_vector(shift_right(unsigned(A_i), shamt_int mod 32));
+                end if;
+
+        end case;
+
+        S_o &lt;= temp_result;
+	if temp_result = ALL_ZEROS_32 then
+            zero_out &lt;= &apos;1&apos;;
+        else
+            zero_out &lt;= &apos;0&apos;;
+        end if;
+
+    end process;
+
+end Behavioral;</string>
+        </entry>
+        <entry>
+          <string>externalOutputs</string>
+          <string>S_o:32,zero_out</string>
+        </entry>
+        <entry>
+          <string>Width</string>
+          <int>8</int>
+        </entry>
+      </elementAttributes>
+      <pos x="580" y="660"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Splitter</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Input Splitting</string>
+          <string>1,1</string>
+        </entry>
+        <entry>
+          <string>Output Splitting</string>
+          <string>2</string>
+        </entry>
+      </elementAttributes>
+      <pos x="740" y="580"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Multiplexer</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Selector Bits</string>
+          <int>2</int>
+        </entry>
+      </elementAttributes>
+      <pos x="940" y="540"/>
+    </visualElement>
+  </visualElements>
+  <wires>
+    <wire>
+      <p1 x="380" y="480"/>
+      <p2 x="480" y="480"/>
+    </wire>
+    <wire>
+      <p1 x="760" y="480"/>
+      <p2 x="960" y="480"/>
+    </wire>
+    <wire>
+      <p1 x="720" y="480"/>
+      <p2 x="740" y="480"/>
+    </wire>
+    <wire>
+      <p1 x="480" y="480"/>
+      <p2 x="520" y="480"/>
+    </wire>
+    <wire>
+      <p1 x="520" y="480"/>
+      <p2 x="600" y="480"/>
+    </wire>
+    <wire>
+      <p1 x="740" y="640"/>
+      <p2 x="800" y="640"/>
+    </wire>
+    <wire>
+      <p1 x="440" y="800"/>
+      <p2 x="800" y="800"/>
+    </wire>
+    <wire>
+      <p1 x="380" y="580"/>
+      <p2 x="400" y="580"/>
+    </wire>
+    <wire>
+      <p1 x="440" y="580"/>
+      <p2 x="460" y="580"/>
+    </wire>
+    <wire>
+      <p1 x="700" y="580"/>
+      <p2 x="740" y="580"/>
+    </wire>
+    <wire>
+      <p1 x="980" y="580"/>
+      <p2 x="1020" y="580"/>
+    </wire>
+    <wire>
+      <p1 x="920" y="580"/>
+      <p2 x="940" y="580"/>
+    </wire>
+    <wire>
+      <p1 x="400" y="580"/>
+      <p2 x="420" y="580"/>
+    </wire>
+    <wire>
+      <p1 x="460" y="580"/>
+      <p2 x="500" y="580"/>
+    </wire>
+    <wire>
+      <p1 x="980" y="420"/>
+      <p2 x="1060" y="420"/>
+    </wire>
+    <wire>
+      <p1 x="900" y="420"/>
+      <p2 x="940" y="420"/>
+    </wire>
+    <wire>
+      <p1 x="460" y="360"/>
+      <p2 x="560" y="360"/>
+    </wire>
+    <wire>
+      <p1 x="740" y="360"/>
+      <p2 x="860" y="360"/>
+    </wire>
+    <wire>
+      <p1 x="400" y="520"/>
+      <p2 x="440" y="520"/>
+    </wire>
+    <wire>
+      <p1 x="540" y="520"/>
+      <p2 x="580" y="520"/>
+    </wire>
+    <wire>
+      <p1 x="480" y="680"/>
+      <p2 x="580" y="680"/>
+    </wire>
+    <wire>
+      <p1 x="740" y="680"/>
+      <p2 x="920" y="680"/>
+    </wire>
+    <wire>
+      <p1 x="440" y="620"/>
+      <p2 x="520" y="620"/>
+    </wire>
+    <wire>
+      <p1 x="520" y="620"/>
+      <p2 x="700" y="620"/>
+    </wire>
+    <wire>
+      <p1 x="400" y="460"/>
+      <p2 x="560" y="460"/>
+    </wire>
+    <wire>
+      <p1 x="720" y="460"/>
+      <p2 x="860" y="460"/>
+    </wire>
+    <wire>
+      <p1 x="560" y="460"/>
+      <p2 x="600" y="460"/>
+    </wire>
+    <wire>
+      <p1 x="460" y="400"/>
+      <p2 x="560" y="400"/>
+    </wire>
+    <wire>
+      <p1 x="860" y="400"/>
+      <p2 x="940" y="400"/>
+    </wire>
+    <wire>
+      <p1 x="460" y="720"/>
+      <p2 x="580" y="720"/>
+    </wire>
+    <wire>
+      <p1 x="860" y="720"/>
+      <p2 x="960" y="720"/>
+    </wire>
+    <wire>
+      <p1 x="1020" y="560"/>
+      <p2 x="1060" y="560"/>
+    </wire>
+    <wire>
+      <p1 x="820" y="560"/>
+      <p2 x="940" y="560"/>
+    </wire>
+    <wire>
+      <p1 x="760" y="560"/>
+      <p2 x="800" y="560"/>
+    </wire>
+    <wire>
+      <p1 x="560" y="660"/>
+      <p2 x="580" y="660"/>
+    </wire>
+    <wire>
+      <p1 x="740" y="660"/>
+      <p2 x="900" y="660"/>
+    </wire>
+    <wire>
+      <p1 x="580" y="500"/>
+      <p2 x="600" y="500"/>
+    </wire>
+    <wire>
+      <p1 x="740" y="500"/>
+      <p2 x="820" y="500"/>
+    </wire>
+    <wire>
+      <p1 x="440" y="600"/>
+      <p2 x="540" y="600"/>
+    </wire>
+    <wire>
+      <p1 x="800" y="600"/>
+      <p2 x="860" y="600"/>
+    </wire>
+    <wire>
+      <p1 x="920" y="600"/>
+      <p2 x="940" y="600"/>
+    </wire>
+    <wire>
+      <p1 x="900" y="440"/>
+      <p2 x="940" y="440"/>
+    </wire>
+    <wire>
+      <p1 x="520" y="380"/>
+      <p2 x="560" y="380"/>
+    </wire>
+    <wire>
+      <p1 x="380" y="380"/>
+      <p2 x="400" y="380"/>
+    </wire>
+    <wire>
+      <p1 x="860" y="380"/>
+      <p2 x="940" y="380"/>
+    </wire>
+    <wire>
+      <p1 x="740" y="380"/>
+      <p2 x="780" y="380"/>
+    </wire>
+    <wire>
+      <p1 x="400" y="380"/>
+      <p2 x="460" y="380"/>
+    </wire>
+    <wire>
+      <p1 x="500" y="540"/>
+      <p2 x="600" y="540"/>
+    </wire>
+    <wire>
+      <p1 x="780" y="540"/>
+      <p2 x="940" y="540"/>
+    </wire>
+    <wire>
+      <p1 x="520" y="700"/>
+      <p2 x="580" y="700"/>
+    </wire>
+    <wire>
+      <p1 x="800" y="640"/>
+      <p2 x="800" y="800"/>
+    </wire>
+    <wire>
+      <p1 x="800" y="560"/>
+      <p2 x="800" y="600"/>
+    </wire>
+    <wire>
+      <p1 x="960" y="460"/>
+      <p2 x="960" y="480"/>
+    </wire>
+    <wire>
+      <p1 x="960" y="620"/>
+      <p2 x="960" y="720"/>
+    </wire>
+    <wire>
+      <p1 x="480" y="480"/>
+      <p2 x="480" y="680"/>
+    </wire>
+    <wire>
+      <p1 x="900" y="420"/>
+      <p2 x="900" y="440"/>
+    </wire>
+    <wire>
+      <p1 x="900" y="440"/>
+      <p2 x="900" y="660"/>
+    </wire>
+    <wire>
+      <p1 x="740" y="600"/>
+      <p2 x="740" y="640"/>
+    </wire>
+    <wire>
+      <p1 x="740" y="480"/>
+      <p2 x="740" y="500"/>
+    </wire>
+    <wire>
+      <p1 x="580" y="500"/>
+      <p2 x="580" y="520"/>
+    </wire>
+    <wire>
+      <p1 x="520" y="380"/>
+      <p2 x="520" y="480"/>
+    </wire>
+    <wire>
+      <p1 x="520" y="620"/>
+      <p2 x="520" y="700"/>
+    </wire>
+    <wire>
+      <p1 x="460" y="360"/>
+      <p2 x="460" y="380"/>
+    </wire>
+    <wire>
+      <p1 x="460" y="400"/>
+      <p2 x="460" y="520"/>
+    </wire>
+    <wire>
+      <p1 x="460" y="580"/>
+      <p2 x="460" y="720"/>
+    </wire>
+    <wire>
+      <p1 x="780" y="380"/>
+      <p2 x="780" y="540"/>
+    </wire>
+    <wire>
+      <p1 x="400" y="380"/>
+      <p2 x="400" y="460"/>
+    </wire>
+    <wire>
+      <p1 x="400" y="520"/>
+      <p2 x="400" y="580"/>
+    </wire>
+    <wire>
+      <p1 x="560" y="460"/>
+      <p2 x="560" y="660"/>
+    </wire>
+    <wire>
+      <p1 x="500" y="540"/>
+      <p2 x="500" y="580"/>
+    </wire>
+    <wire>
+      <p1 x="820" y="500"/>
+      <p2 x="820" y="560"/>
+    </wire>
+    <wire>
+      <p1 x="440" y="640"/>
+      <p2 x="440" y="800"/>
+    </wire>
+    <wire>
+      <p1 x="760" y="480"/>
+      <p2 x="760" y="560"/>
+    </wire>
+    <wire>
+      <p1 x="760" y="560"/>
+      <p2 x="760" y="580"/>
+    </wire>
+    <wire>
+      <p1 x="600" y="520"/>
+      <p2 x="600" y="540"/>
+    </wire>
+    <wire>
+      <p1 x="920" y="580"/>
+      <p2 x="920" y="600"/>
+    </wire>
+    <wire>
+      <p1 x="920" y="600"/>
+      <p2 x="920" y="680"/>
+    </wire>
+    <wire>
+      <p1 x="540" y="520"/>
+      <p2 x="540" y="600"/>
+    </wire>
+    <wire>
+      <p1 x="860" y="360"/>
+      <p2 x="860" y="380"/>
+    </wire>
+    <wire>
+      <p1 x="860" y="400"/>
+      <p2 x="860" y="460"/>
+    </wire>
+    <wire>
+      <p1 x="860" y="600"/>
+      <p2 x="860" y="720"/>
+    </wire>
+    <wire>
+      <p1 x="700" y="580"/>
+      <p2 x="700" y="620"/>
+    </wire>
+    <wire>
+      <p1 x="1020" y="560"/>
+      <p2 x="1020" y="580"/>
+    </wire>
+  </wires>
+  <measurementOrdering/>
+</circuit>
