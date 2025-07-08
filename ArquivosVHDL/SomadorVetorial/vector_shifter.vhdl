@@ -6,73 +6,87 @@ entity vector_shifter is
     Port(
         A_i       : in  std_logic_vector(31 downto 0);
         B_i       : in  std_logic_vector(31 downto 0);  -- rs2 ou imediato
-        mode_i    : in  std_logic; -- '0' = shift left, '1' = shift right
-        vecSize_i : in  std_logic_vector(1 downto 0); -- 00:4b, 01:8b, 10:16b, 11:32b
-
-        S_o       : out std_logic_vector(31 downto 0)
+        mode_i    : in  std_logic;                      -- '0' = shift left, '1' = shift right
+        vecSize_i : in  std_logic_vector(1 downto 0);   -- 00:4b, 01:8b, 10:16b, 11:32b
+        S_o       : out std_logic_vector(31 downto 0);
+	zero_out  : out std_logic
     );
 end vector_shifter;
 
 architecture Behavioral of vector_shifter is
 
-    constant NUM_BLOCKS : integer := 8;
-
-    type vec4_array is array (0 to NUM_BLOCKS-1) of std_logic_vector(3 downto 0);
-    signal A_blocks, S_blocks : vec4_array;
     signal result : std_logic_vector(31 downto 0);
-
-    -- Extrai os 5 bits de shift amount (seguindo RISC-V)
-    signal shamt : std_logic_vector(4 downto 0);
+    signal shamt  : std_logic_vector(4 downto 0);
+    signal shamt_int : integer;
+    constant ALL_ZEROS_32 : std_logic_vector(31 downto 0) := (others => '0');
 
 begin
 
-    -- Pegando apenas os 5 LSBs de B_i
+    -- Pega os 5 LSBs do B_i como shift amount
     shamt <= B_i(4 downto 0);
+    shamt_int <= to_integer(unsigned(shamt));
 
-    -- Dividir A_i em blocos de 4 bits
-    splitter: for i in 0 to NUM_BLOCKS-1 generate
-        A_blocks(i) <= A_i(4*i+3 downto 4*i);
-    end generate;
+    -- Processo único com geradores internos para diferentes tamanhos de vetores
+    process(A_i, shamt_int, mode_i, vecSize_i)
+        variable temp_result : std_logic_vector(31 downto 0);
+	variable segment4 : std_logic_vector(3 downto 0);
+    	variable segment8 : std_logic_vector(7 downto 0);
+    	variable segment16 : std_logic_vector(15 downto 0);
+    begin
+        temp_result := (others => '0');
 
-    -- Aplica shift vetorial por bloco, considerando o tamanho do vetor
-    shifter: for i in 0 to NUM_BLOCKS-1 generate
-        process(A_blocks, shamt, mode_i, vecSize_i)
-            variable local_shift : integer;
-            variable A_val       : std_logic_vector(3 downto 0);
-            variable result_val  : std_logic_vector(3 downto 0);
-        begin
-            A_val := A_blocks(i);
-            result_val := (others => '0');
+        case vecSize_i is
 
-            -- Determina o quanto deslocar com base no tamanho do vetor
-            if vecSize_i = "00" then       -- 4-bit vetores (1 bloco)
-                local_shift := to_integer(unsigned(shamt)) mod 4;
-            elsif vecSize_i = "01" then    -- 8-bit vetores (2 blocos)
-                local_shift := to_integer(unsigned(shamt)) mod 8;
-            elsif vecSize_i = "10" then    -- 16-bit vetores (4 blocos)
-                local_shift := to_integer(unsigned(shamt)) mod 16;
-            else                           -- 32-bit vetor (8 blocos)
-                local_shift := to_integer(unsigned(shamt)) mod 32;
-            end if;
+            when "00" =>  -- 4-bit vetores (8 grupos)
+                gen4: for i in 0 to 7 loop
+		if shamt_int >= 4 then
+            		segment4 := (others => '0');
+		else
+                    if mode_i = '0' then
+                        segment4 := std_logic_vector(shift_left(unsigned(A_i(4*i+3 downto 4*i)), shamt_int mod 4));
+                    else
+                        segment4 := std_logic_vector(shift_right(unsigned(A_i(4*i+3 downto 4*i)), shamt_int mod 4));
+                    end if;
+		end if;
+                    temp_result(4*i+3 downto 4*i) := segment4;
+                end loop;
 
-            -- SHIFT lógico
-            if mode_i = '0' then
-                -- Shift Left
-                result_val := std_logic_vector(shift_left(unsigned(A_val), local_shift mod 4));
-            else
-                -- Shift Right
-                result_val := std_logic_vector(shift_right(unsigned(A_val), local_shift mod 4));
-            end if;
+            when "01" =>  -- 8-bit vetores (4 grupos)
+                gen8: for i in 0 to 3 loop
+                    if mode_i = '0' then
+                        segment8 := std_logic_vector(shift_left(unsigned(A_i(8*i+7 downto 8*i)), shamt_int mod 8));
+                    else
+                        segment8 := std_logic_vector(shift_right(unsigned(A_i(8*i+7 downto 8*i)), shamt_int mod 8));
+                    end if;
+                    temp_result(8*i+7 downto 8*i) := segment8;
+                end loop;
 
-            S_blocks(i) <= result_val;
-        end process;
-    end generate;
+            when "10" =>  -- 16-bit vetores (2 grupos)
+                gen16: for i in 0 to 1 loop
+                    if mode_i = '0' then
+                        segment16 := std_logic_vector(shift_left(unsigned(A_i(16*i+15 downto 16*i)), shamt_int mod 16));
+                    else
+                        segment16 := std_logic_vector(shift_right(unsigned(A_i(16*i+15 downto 16*i)), shamt_int mod 16));
+                    end if;
+                    temp_result(16*i+15 downto 16*i) := segment16;
+                end loop;
 
-    -- Reconstroi resultado final
-    joiner: for i in 0 to NUM_BLOCKS-1 generate
-        result(4*i+3 downto 4*i) <= S_blocks(i);
-    end generate;
+            when others =>  -- 32-bit vetor (1 grupo)
+                if mode_i = '0' then
+                    temp_result := std_logic_vector(shift_left(unsigned(A_i), shamt_int mod 32));
+                else
+                    temp_result := std_logic_vector(shift_right(unsigned(A_i), shamt_int mod 32));
+                end if;
 
-    S_o <= result;
+        end case;
 
-end Behavioral;
+        S_o <= temp_result;
+	if temp_result = ALL_ZEROS_32 then
+            zero_out <= '1';
+        else
+            zero_out <= '0';
+        end if;
+
+    end process;
+
+end Behavioral
