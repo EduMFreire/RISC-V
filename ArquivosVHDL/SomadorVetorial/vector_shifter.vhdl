@@ -53,22 +53,30 @@ begin
 
             when "01" =>  -- 8-bit vetores (4 grupos)
                 gen8: for i in 0 to 3 loop
+		if shamt_int >= 8 then
+            		segment8 := (others => '0');
+		else
                     if mode_i = '0' then
                         segment8 := std_logic_vector(shift_left(unsigned(A_i(8*i+7 downto 8*i)), shamt_int mod 8));
                     else
                         segment8 := std_logic_vector(shift_right(unsigned(A_i(8*i+7 downto 8*i)), shamt_int mod 8));
                     end if;
                     temp_result(8*i+7 downto 8*i) := segment8;
+		end if;
                 end loop;
 
             when "10" =>  -- 16-bit vetores (2 grupos)
                 gen16: for i in 0 to 1 loop
+		if shamt_int >= 16 then
+            		segment16 := (others => '0');
+		else
                     if mode_i = '0' then
                         segment16 := std_logic_vector(shift_left(unsigned(A_i(16*i+15 downto 16*i)), shamt_int mod 16));
                     else
                         segment16 := std_logic_vector(shift_right(unsigned(A_i(16*i+15 downto 16*i)), shamt_int mod 16));
                     end if;
                     temp_result(16*i+15 downto 16*i) := segment16;
+		end if;
                 end loop;
 
             when others =>  -- 32-bit vetor (1 grupo)
@@ -89,4 +97,4 @@ begin
 
     end process;
 
-end Behavioral
+end Behavioral;
