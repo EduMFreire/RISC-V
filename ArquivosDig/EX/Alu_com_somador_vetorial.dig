@@ -434,22 +434,30 @@ begin
 
             when &quot;01&quot; =&gt;  -- 8-bit vetores (4 grupos)
                 gen8: for i in 0 to 3 loop
+		if shamt_int &gt;= 8 then
+            		segment8 := (others =&gt; &apos;0&apos;);
+		else
                     if mode_i = &apos;0&apos; then
                         segment8 := std_logic_vector(shift_left(unsigned(A_i(8*i+7 downto 8*i)), shamt_int mod 8));
                     else
                         segment8 := std_logic_vector(shift_right(unsigned(A_i(8*i+7 downto 8*i)), shamt_int mod 8));
                     end if;
                     temp_result(8*i+7 downto 8*i) := segment8;
+		end if;
                 end loop;
 
             when &quot;10&quot; =&gt;  -- 16-bit vetores (2 grupos)
                 gen16: for i in 0 to 1 loop
+		if shamt_int &gt;= 16 then
+            		segment16 := (others =&gt; &apos;0&apos;);
+		else
                     if mode_i = &apos;0&apos; then
                         segment16 := std_logic_vector(shift_left(unsigned(A_i(16*i+15 downto 16*i)), shamt_int mod 16));
                     else
                         segment16 := std_logic_vector(shift_right(unsigned(A_i(16*i+15 downto 16*i)), shamt_int mod 16));
                     end if;
                     temp_result(16*i+15 downto 16*i) := segment16;
+		end if;
                 end loop;
 
             when others =&gt;  -- 32-bit vetor (1 grupo)
