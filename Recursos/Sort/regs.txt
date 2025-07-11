@@ -1,0 +1,17 @@
+Registradores inteiros do RISC-V, de acordo com os slides...
+(estou registrando porque vou usar para o algoritmo de ordenação)
+
+Posso usar:
+x0: 0
+x1: return addr
+x5-x7: temporários
+x10-x17: parâmetros (também servem de temporários)
+x18-x27: salvos
+
+x9: salvo
+
+Não vou usar:
+x2: stack ptr
+x3: gbl pts
+x4: thread ptr
+x8: salvo/frame ptr

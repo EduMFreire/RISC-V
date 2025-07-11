@@ -1,0 +1,57 @@
+Variáveis globais:
+    n: primeiro índice que está fora do array (size+1)
+    i: índice que estamos prestes a consertar
+
+main:
+    Temporários:
+        a_1
+        a_2
+
+    # Pegar n
+    lw n, 0(x0)
+    addi n, n, 1
+    addi i, x0, 1 # Inicializar i
+
+        # Chamar min
+        addi x10, i, 0
+        jalr x1, min(x0) # O valor de retorno vai em x5
+
+        # Trocar o resultado com o cara na posição i
+        lw a_1, 0(i)
+        lw a_2, 0(x5)
+        sw a_1, 0(x5)
+        sw a_2, 0(i)
+
+        addi i, i, 1 # Incrementar i
+        bne i, n, -7 # Voltar se ainda não chegamos ao fim
+
+    # Se chegamos ao fim, ficar parado
+    jal x0, 0
+
+min(x10):
+    # Pega o índice do mínimo do array a partir da posição x10 e guarda em x5
+
+    Temporários:
+        b_min
+        b_i
+        x5
+
+        b_val
+        b_temp
+
+    lw b_min, 0(x10) # b_min guarda o mínimo até agora
+    addi x5, x10, 0 # x5 guarda seu índice
+    addi b_i, x10, 0 # b_i guarda o índice com o qual estamos percorrendo
+
+        # Checar se A[b_i] é menor que o mínimo
+        lw b_val, 0(b_i) # Pega A[b_i]
+        sub b_temp, b_val, b_min
+        srli b_temp, b_temp, 31
+        beq b_temp, x0, 3 # Se tiver dado 0 (A[b_i] igual ou maior que min), pular o próximo bloco
+            addi b_min, b_val, 0
+            addi x5, b_i, 0
+
+        addi b_i, b_i, 1 # Incrementar b_i
+        bne b_i, n, -7 # Voltar para o início do loop se ainda não chegamos ao final
+
+    jalr x0, 0(x1)
