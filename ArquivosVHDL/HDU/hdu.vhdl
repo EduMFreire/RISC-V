@@ -47,7 +47,7 @@ architecture Behavioral of HDU is
 
 begin
 
-process(rs1, rs2, opcode, rd_IDEX, memRead_IDEX, jump)
+process(rs1, rs2, opcode, jump, rd_IDEX, memRead_IDEX, regWrite_IDEX, rd_EXMEM, memRead_EXMEM)
 
     variable inst_type: integer;
 

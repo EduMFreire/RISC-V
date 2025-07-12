@@ -1,24 +1,22 @@
 Teste de lógica de controle:
-    Acho que jal x1, 2 equivale a 0x2000EF
-    E jal x1, 0 equivale a 0x000000ef
-    E jal x1, -2 equivale a 0xfffff0ef
-    E jal x1, -4 equivale a 0xffdff0ef
-    jal x0, -6 equivale a 0xffbff06f
-    jal x1, 12 equivale a 0x00c000ef
+    jal x1, 2: 0x2000EF
+    jal x1, 0: 0x000000ef
+    jal x1, -2: 0xfffff0ef
+    jal x1, -4: 0xffdff0ef
+    jal x0, -6: 0xffbff06f
+    jal x1, 12: 0x00c000ef
 
     Lembrando que o valor a ser codificado é sempre metade do valor a somar a PC
         Ou seja, jal x1, -2 subtrai 4 de PC
         Como PC é sempre múltiplo de 4, isso equivale a voltar à instrução anterior
 
-    jalr x1, 12(x0) é 0x00c000e7
-    jalr x1, 12(x1) é 0x00c080e7
+    jalr x1, 12(x0): 0x00c000e7
+    jalr x1, 12(x1): 0x00c080e7
 
 Testes da HDU:
     Hazard de escrita-leitura:
-        addi x1, x1, 1
-
-        Equivale a...
-        0x00108093
+        addi x1, x1, 1: 0x00108093
+        addi x1, x0, 4: 0x00400093
 
 Testes em geral:
     Incrementador:

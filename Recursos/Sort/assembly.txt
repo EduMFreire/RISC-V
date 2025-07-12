@@ -2,7 +2,7 @@ lw x18, 0(x0) # Pegar x18
 addi x18, x18, 1
 addi x19, x0, 1 # Inicializar x19
     addi x10, x19, 0 # Chamar min
-    jalr x1, 44(x0) # O valor de retorno vai em x5
+    jalr x1, 48(x0) # O valor de retorno vai em x5
     lw x10, 0(x19) # Trocar o resultado com o cara na posição x19
     lw x11, 0(x5)
     sw x10, 0(x5)
