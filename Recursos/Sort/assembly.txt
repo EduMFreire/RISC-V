@@ -1,24 +1,24 @@
-lw x18, 0(x0) # Pegar x18
+lw x18, 0(x0)
 addi x18, x18, 1
-addi x19, x0, 1 # Inicializar x19
-    addi x10, x19, 0 # Chamar min
-    jalr x1, 48(x0) # O valor de retorno vai em x5
-    lw x10, 0(x19) # Trocar o resultado com o cara na posição x19
+addi x19, x0, 1
+    addi x10, x19, 0
+    jalr x1, 48(x0)
+    lw x10, 0(x19)
     lw x11, 0(x5)
     sw x10, 0(x5)
     sw x11, 0(x19)
-    addi x19, x19, 1 # Incrementar x19
-    bne x19, x18, -16 # Voltar se ainda não chegamos ao fim
-jal x0, 0 # Se chegamos ao fim, ficar parado
-    lw x11, 0(x10) # x11 guarda o mínimo até agora
-    addi x5, x10, 0 # x5 guarda seu índice
-    addi x12, x10, 0 # x12 guarda o índice com o qual estamos percorrendo
-        lw x13, 0(x12) # Pega A[x12]
+    addi x19, x19, 1
+    bne x19, x18, -14
+jal x0, 0
+    lw x11, 0(x10)
+    addi x5, x10, 0
+    addi x12, x10, 0
+        lw x13, 0(x12)
         sub x14, x13, x11
         srli x14, x14, 31
-        beq x14, x0, 6 # Se tiver dado 0 (A[x12] igual ou maior que min), pular o próximo bloco
+        beq x14, x0, 6
             addi x11, x13, 0
             addi x5, x12, 0
-        addi x12, x12, 1 # Incrementar x12
-        bne x12, x18, -16 # Voltar para o início do loop se ainda não chegamos ao final
+        addi x12, x12, 1
+        bne x12, x18, -14
     jalr x0, 0(x1)
