@@ -1,4 +1,3 @@
-
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
@@ -13,11 +12,11 @@ entity HDU is
 
         -- Entradas que vêm dos demais estágios
         rd_IDEX: in std_logic_vector(4 downto 0);
-        memRead_IDEX: in std_logic;
+        memRead_IDEX: in std_logic_vector(1 downto 0);
         regWrite_IDEX: in std_logic;
 
         rd_EXMEM: in std_logic_vector(4 downto 0);
-        memRead_EXMEM: in std_logic;
+        memRead_EXMEM: in std_logic_vector(1 downto 0);
 
     	-- Saídas
         -- Saídas freeze
@@ -88,14 +87,14 @@ begin
     -- Identificar com base nisso se há DataHazard
     case inst_type is            
         when 2 =>
-            if memRead_IDEX = '1' and rd_IDEX = rs1 then
+            if memRead_IDEX = "01" and rd_IDEX = rs1 then
                 DataHazard := '1'; -- load-use
             else
                 DataHazard := '0';
             end if;
 
         when 3 =>
-            if memRead_IDEX = '1' and (rd_IDEX = rs1 or rd_IDEX = rs2) then
+            if memRead_IDEX = "01" and (rd_IDEX = rs1 or rd_IDEX = rs2) then
                 DataHazard := '1'; -- load-use
             else
                 DataHazard := '0';
@@ -105,10 +104,10 @@ begin
             if regWrite_IDEX = '1' and rd_IDEX = rs1 then
                 DataHazard := '1'; -- write-jump
 
-            elsif memRead_IDEX = '1' and rd_IDEX = rs1 then
+            elsif memRead_IDEX = "01" and rd_IDEX = rs1 then
                 DataHazard := '1'; -- load-jump em IDEX
             
-            elsif memRead_EXMEM = '1' and rd_EXMEM = rs1 then
+            elsif memRead_EXMEM = "01" and rd_EXMEM = rs1 then
                 DataHazard := '1'; -- load-jump em EXMEM
             
             else
@@ -120,10 +119,10 @@ begin
             if regWrite_IDEX = '1' and (rd_IDEX = rs1 or rd_IDEX = rs2) then
                 DataHazard := '1'; -- write-jump
 
-            elsif memRead_IDEX = '1' and (rd_IDEX = rs1 or rd_IDEX = rs2) then
+            elsif memRead_IDEX = "01" and (rd_IDEX = rs1 or rd_IDEX = rs2) then
                 DataHazard := '1'; -- load-jump em IDEX
 
-            elsif memRead_EXMEM = '1' and (rd_EXMEM = rs1 or rd_EXMEM = rs2) then
+            elsif memRead_EXMEM = "01" and (rd_EXMEM = rs1 or rd_EXMEM = rs2) then
                 DataHazard := '1'; -- load-jump em EXMEM
             
             else
