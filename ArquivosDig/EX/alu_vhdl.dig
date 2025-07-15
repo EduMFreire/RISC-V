@@ -29,14 +29,11 @@ entity alu_combinational is
         a_in            : in  std_logic_vector(31 downto 0);
         b_in            : in  std_logic_vector(31 downto 0);
         c_in            : in  std_logic_vector(3 downto 0);
-        result_out      : out std_logic_vector(31 downto 0);
-        zero_flag_out   : out std_logic
+        result_out      : out std_logic_vector(31 downto 0)
     );
 end alu_combinational;
 
 architecture Behavioral of alu_combinational is
-
-constant ALL_ZEROS_32 : std_logic_vector(31 downto 0) := (others =&gt; &apos;0&apos;);
 
 begin
 
@@ -73,11 +70,6 @@ begin
         result_out &lt;= temp_result;
 
         -- Determine the zero flag based on the calculated result
-        if temp_result = ALL_ZEROS_32 then
-            zero_flag_out &lt;= &apos;1&apos;;
-        else
-            zero_flag_out &lt;= &apos;0&apos;;
-        end if;
 
     end process;
 
@@ -89,7 +81,7 @@ end Behavioral;</string>
         </entry>
         <entry>
           <string>externalOutputs</string>
-          <string>result_out:32,zero_flag_out</string>
+          <string>result_out:32</string>
         </entry>
       </elementAttributes>
       <pos x="580" y="360"/>
@@ -120,7 +112,7 @@ end Behavioral;</string>
           <int>32</int>
         </entry>
       </elementAttributes>
-      <pos x="340" y="360"/>
+      <pos x="380" y="380"/>
     </visualElement>
     <visualElement>
       <elementName>In</elementName>
@@ -134,7 +126,7 @@ end Behavioral;</string>
           <int>32</int>
         </entry>
       </elementAttributes>
-      <pos x="280" y="380"/>
+      <pos x="340" y="460"/>
     </visualElement>
     <visualElement>
       <elementName>In</elementName>
@@ -148,47 +140,53 @@ end Behavioral;</string>
           <int>4</int>
         </entry>
       </elementAttributes>
-      <pos x="340" y="400"/>
-    </visualElement>
-    <visualElement>
-      <elementName>Out</elementName>
-      <elementAttributes>
-        <entry>
-          <string>Label</string>
-          <string>zero_flag</string>
-        </entry>
-      </elementAttributes>
-      <pos x="900" y="520"/>
+      <pos x="380" y="580"/>
     </visualElement>
   </visualElements>
   <wires>
     <wire>
-      <p1 x="340" y="400"/>
+      <p1 x="560" y="400"/>
       <p2 x="580" y="400"/>
     </wire>
     <wire>
-      <p1 x="760" y="360"/>
-      <p2 x="860" y="360"/>
+      <p1 x="380" y="580"/>
+      <p2 x="560" y="580"/>
     </wire>
     <wire>
-      <p1 x="340" y="360"/>
+      <p1 x="520" y="360"/>
       <p2 x="580" y="360"/>
     </wire>
     <wire>
-      <p1 x="780" y="520"/>
-      <p2 x="900" y="520"/>
+      <p1 x="380" y="380"/>
+      <p2 x="520" y="380"/>
     </wire>
     <wire>
-      <p1 x="760" y="380"/>
-      <p2 x="780" y="380"/>
-    </wire>
-    <wire>
-      <p1 x="280" y="380"/>
+      <p1 x="540" y="380"/>
       <p2 x="580" y="380"/>
     </wire>
     <wire>
-      <p1 x="780" y="380"/>
-      <p2 x="780" y="520"/>
+      <p1 x="760" y="380"/>
+      <p2 x="860" y="380"/>
+    </wire>
+    <wire>
+      <p1 x="340" y="460"/>
+      <p2 x="540" y="460"/>
+    </wire>
+    <wire>
+      <p1 x="560" y="400"/>
+      <p2 x="560" y="580"/>
+    </wire>
+    <wire>
+      <p1 x="520" y="360"/>
+      <p2 x="520" y="380"/>
+    </wire>
+    <wire>
+      <p1 x="540" y="380"/>
+      <p2 x="540" y="460"/>
+    </wire>
+    <wire>
+      <p1 x="860" y="360"/>
+      <p2 x="860" y="380"/>
     </wire>
   </wires>
   <measurementOrdering/>
