@@ -7,18 +7,16 @@ entity alu_combinational is
         a_in            : in  std_logic_vector(31 downto 0);
         b_in            : in  std_logic_vector(31 downto 0);
         c_in            : in  std_logic_vector(3 downto 0);
-        result_out      : out std_logic_vector(31 downto 0);
-        zero_flag_out   : out std_logic
+        result_out      : out std_logic_vector(31 downto 0)
+
     );
 end alu_combinational;
 
 architecture Behavioral of alu_combinational is
 
-constant ALL_ZEROS_32 : std_logic_vector(31 downto 0) := (others => '0');
-
 begin
 
-    process
+    process(a_in, b_in, c_in)
         variable temp_result : std_logic_vector(31 downto 0);
     begin
         -- Initialize temp_result for safety (though not strictly necessary for full case coverage)
@@ -51,12 +49,6 @@ begin
         result_out <= temp_result;
 
         -- Determine the zero flag based on the calculated result
-        if temp_result = ALL_ZEROS_32 then
-            zero_flag_out <= '1';
-        else
-            zero_flag_out <= '0';
-        end if;
-
     end process;
 
 end Behavioral;
