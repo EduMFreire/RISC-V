@@ -4376,16 +4376,16 @@ end architecture behavioral;</string>
       <p2 x="1520" y="420"/>
     </wire>
     <wire>
-      <p1 x="2020" y="420"/>
-      <p2 x="2060" y="420"/>
-    </wire>
-    <wire>
       <p1 x="1840" y="420"/>
       <p2 x="1960" y="420"/>
     </wire>
     <wire>
       <p1 x="-500" y="420"/>
       <p2 x="-340" y="420"/>
+    </wire>
+    <wire>
+      <p1 x="2040" y="420"/>
+      <p2 x="2060" y="420"/>
     </wire>
     <wire>
       <p1 x="-680" y="-40"/>
@@ -4578,6 +4578,10 @@ end architecture behavioral;</string>
     <wire>
       <p1 x="2100" y="440"/>
       <p2 x="2140" y="440"/>
+    </wire>
+    <wire>
+      <p1 x="2020" y="440"/>
+      <p2 x="2040" y="440"/>
     </wire>
     <wire>
       <p1 x="2960" y="440"/>
@@ -5778,6 +5782,10 @@ end architecture behavioral;</string>
     <wire>
       <p1 x="2040" y="1000"/>
       <p2 x="2040" y="1120"/>
+    </wire>
+    <wire>
+      <p1 x="2040" y="420"/>
+      <p2 x="2040" y="440"/>
     </wire>
     <wire>
       <p1 x="760" y="-20"/>
