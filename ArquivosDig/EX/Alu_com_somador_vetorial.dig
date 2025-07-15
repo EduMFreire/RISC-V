@@ -29,14 +29,12 @@ entity alu_combinational is
         a_in            : in  std_logic_vector(31 downto 0);
         b_in            : in  std_logic_vector(31 downto 0);
         c_in            : in  std_logic_vector(3 downto 0);
-        result_out      : out std_logic_vector(31 downto 0);
-        zero_flag_out   : out std_logic
+        result_out      : out std_logic_vector(31 downto 0)
+
     );
 end alu_combinational;
 
 architecture Behavioral of alu_combinational is
-
-constant ALL_ZEROS_32 : std_logic_vector(31 downto 0) := (others =&gt; &apos;0&apos;);
 
 begin
 
@@ -73,12 +71,6 @@ begin
         result_out &lt;= temp_result;
 
         -- Determine the zero flag based on the calculated result
-        if temp_result = ALL_ZEROS_32 then
-            zero_flag_out &lt;= &apos;1&apos;;
-        else
-            zero_flag_out &lt;= &apos;0&apos;;
-        end if;
-
     end process;
 
 end Behavioral;</string>
@@ -89,7 +81,7 @@ end Behavioral;</string>
         </entry>
         <entry>
           <string>externalOutputs</string>
-          <string>result_out:32,zero_flag_out</string>
+          <string>result_out:32</string>
         </entry>
       </elementAttributes>
       <pos x="560" y="360"/>
@@ -166,8 +158,7 @@ entity vector_adder is
         B_i       : in  std_logic_vector(31 downto 0);
         mode_i    : in  std_logic; -- &apos;0&apos; para soma, &apos;1&apos; para subtração
         vecSize_i : in  std_logic_vector(1 downto 0); -- 00:4b, 01:8b, 10:16b, 11:32b
-        S_o       : out std_logic_vector(31 downto 0);
-	zero_out  : out std_logic
+        S_o       : out std_logic_vector(31 downto 0)
     );
 end vector_adder;
 
@@ -229,16 +220,6 @@ begin
             Cout =&gt; carry(i+1)
         );
     end generate;
-
-	process(S_o)
-    	begin
-        	if S_o = X&quot;00000000&quot; then
-    			zero_out &lt;= &apos;1&apos;;
-		else
-    			zero_out &lt;= &apos;0&apos;;
-		end if;
-        end process;
-
 	
 end Behavioral;
 
@@ -287,7 +268,7 @@ end arch;</string>
         </entry>
         <entry>
           <string>externalOutputs</string>
-          <string>S_o:32,zero_out</string>
+          <string>S_o:32</string>
         </entry>
         <entry>
           <string>Width</string>
@@ -339,16 +320,6 @@ end arch;</string>
       <pos x="1060" y="420"/>
     </visualElement>
     <visualElement>
-      <elementName>Out</elementName>
-      <elementAttributes>
-        <entry>
-          <string>Label</string>
-          <string>zero_out</string>
-        </entry>
-      </elementAttributes>
-      <pos x="1060" y="560"/>
-    </visualElement>
-    <visualElement>
       <elementName>Splitter</elementName>
       <elementAttributes>
         <entry>
@@ -389,8 +360,7 @@ entity vector_shifter is
         B_i       : in  std_logic_vector(31 downto 0);  -- rs2 ou imediato
         mode_i    : in  std_logic;                      -- &apos;0&apos; = shift left, &apos;1&apos; = shift right
         vecSize_i : in  std_logic_vector(1 downto 0);   -- 00:4b, 01:8b, 10:16b, 11:32b
-        S_o       : out std_logic_vector(31 downto 0);
-	zero_out  : out std_logic
+        S_o       : out std_logic_vector(31 downto 0)
     );
 end vector_shifter;
 
@@ -399,7 +369,6 @@ architecture Behavioral of vector_shifter is
     signal result : std_logic_vector(31 downto 0);
     signal shamt  : std_logic_vector(4 downto 0);
     signal shamt_int : integer;
-    constant ALL_ZEROS_32 : std_logic_vector(31 downto 0) := (others =&gt; &apos;0&apos;);
 
 begin
 
@@ -470,11 +439,6 @@ begin
         end case;
 
         S_o &lt;= temp_result;
-	if temp_result = ALL_ZEROS_32 then
-            zero_out &lt;= &apos;1&apos;;
-        else
-            zero_out &lt;= &apos;0&apos;;
-        end if;
 
     end process;
 
@@ -482,7 +446,7 @@ end Behavioral;</string>
         </entry>
         <entry>
           <string>externalOutputs</string>
-          <string>S_o:32,zero_out</string>
+          <string>S_o:32</string>
         </entry>
         <entry>
           <string>Width</string>
@@ -505,16 +469,6 @@ end Behavioral;</string>
       </elementAttributes>
       <pos x="740" y="580"/>
     </visualElement>
-    <visualElement>
-      <elementName>Multiplexer</elementName>
-      <elementAttributes>
-        <entry>
-          <string>Selector Bits</string>
-          <int>2</int>
-        </entry>
-      </elementAttributes>
-      <pos x="940" y="540"/>
-    </visualElement>
   </visualElements>
   <wires>
     <wire>
@@ -524,10 +478,6 @@ end Behavioral;</string>
     <wire>
       <p1 x="760" y="480"/>
       <p2 x="960" y="480"/>
-    </wire>
-    <wire>
-      <p1 x="720" y="480"/>
-      <p2 x="740" y="480"/>
     </wire>
     <wire>
       <p1 x="480" y="480"/>
@@ -558,14 +508,6 @@ end Behavioral;</string>
       <p2 x="740" y="580"/>
     </wire>
     <wire>
-      <p1 x="980" y="580"/>
-      <p2 x="1020" y="580"/>
-    </wire>
-    <wire>
-      <p1 x="920" y="580"/>
-      <p2 x="940" y="580"/>
-    </wire>
-    <wire>
       <p1 x="400" y="580"/>
       <p2 x="420" y="580"/>
     </wire>
@@ -578,16 +520,16 @@ end Behavioral;</string>
       <p2 x="1060" y="420"/>
     </wire>
     <wire>
-      <p1 x="900" y="420"/>
+      <p1 x="920" y="420"/>
       <p2 x="940" y="420"/>
+    </wire>
+    <wire>
+      <p1 x="460" y="740"/>
+      <p2 x="580" y="740"/>
     </wire>
     <wire>
       <p1 x="460" y="360"/>
       <p2 x="560" y="360"/>
-    </wire>
-    <wire>
-      <p1 x="740" y="360"/>
-      <p2 x="860" y="360"/>
     </wire>
     <wire>
       <p1 x="400" y="520"/>
@@ -595,15 +537,11 @@ end Behavioral;</string>
     </wire>
     <wire>
       <p1 x="540" y="520"/>
-      <p2 x="580" y="520"/>
+      <p2 x="600" y="520"/>
     </wire>
     <wire>
       <p1 x="480" y="680"/>
       <p2 x="580" y="680"/>
-    </wire>
-    <wire>
-      <p1 x="740" y="680"/>
-      <p2 x="920" y="680"/>
     </wire>
     <wire>
       <p1 x="440" y="620"/>
@@ -618,10 +556,6 @@ end Behavioral;</string>
       <p2 x="560" y="460"/>
     </wire>
     <wire>
-      <p1 x="720" y="460"/>
-      <p2 x="860" y="460"/>
-    </wire>
-    <wire>
       <p1 x="560" y="460"/>
       <p2 x="600" y="460"/>
     </wire>
@@ -634,55 +568,27 @@ end Behavioral;</string>
       <p2 x="940" y="400"/>
     </wire>
     <wire>
-      <p1 x="460" y="720"/>
+      <p1 x="520" y="720"/>
       <p2 x="580" y="720"/>
-    </wire>
-    <wire>
-      <p1 x="860" y="720"/>
-      <p2 x="960" y="720"/>
-    </wire>
-    <wire>
-      <p1 x="1020" y="560"/>
-      <p2 x="1060" y="560"/>
-    </wire>
-    <wire>
-      <p1 x="820" y="560"/>
-      <p2 x="940" y="560"/>
-    </wire>
-    <wire>
-      <p1 x="760" y="560"/>
-      <p2 x="800" y="560"/>
     </wire>
     <wire>
       <p1 x="560" y="660"/>
       <p2 x="580" y="660"/>
     </wire>
     <wire>
-      <p1 x="740" y="660"/>
-      <p2 x="900" y="660"/>
-    </wire>
-    <wire>
-      <p1 x="580" y="500"/>
-      <p2 x="600" y="500"/>
-    </wire>
-    <wire>
-      <p1 x="740" y="500"/>
-      <p2 x="820" y="500"/>
+      <p1 x="720" y="500"/>
+      <p2 x="860" y="500"/>
     </wire>
     <wire>
       <p1 x="440" y="600"/>
       <p2 x="540" y="600"/>
     </wire>
     <wire>
-      <p1 x="800" y="600"/>
-      <p2 x="860" y="600"/>
-    </wire>
-    <wire>
-      <p1 x="920" y="600"/>
-      <p2 x="940" y="600"/>
-    </wire>
-    <wire>
       <p1 x="900" y="440"/>
+      <p2 x="920" y="440"/>
+    </wire>
+    <wire>
+      <p1 x="920" y="440"/>
       <p2 x="940" y="440"/>
     </wire>
     <wire>
@@ -694,12 +600,8 @@ end Behavioral;</string>
       <p2 x="400" y="380"/>
     </wire>
     <wire>
-      <p1 x="860" y="380"/>
-      <p2 x="940" y="380"/>
-    </wire>
-    <wire>
       <p1 x="740" y="380"/>
-      <p2 x="780" y="380"/>
+      <p2 x="940" y="380"/>
     </wire>
     <wire>
       <p1 x="400" y="380"/>
@@ -710,52 +612,28 @@ end Behavioral;</string>
       <p2 x="600" y="540"/>
     </wire>
     <wire>
-      <p1 x="780" y="540"/>
-      <p2 x="940" y="540"/>
-    </wire>
-    <wire>
-      <p1 x="520" y="700"/>
-      <p2 x="580" y="700"/>
+      <p1 x="740" y="700"/>
+      <p2 x="900" y="700"/>
     </wire>
     <wire>
       <p1 x="800" y="640"/>
       <p2 x="800" y="800"/>
     </wire>
     <wire>
-      <p1 x="800" y="560"/>
-      <p2 x="800" y="600"/>
-    </wire>
-    <wire>
       <p1 x="960" y="460"/>
       <p2 x="960" y="480"/>
-    </wire>
-    <wire>
-      <p1 x="960" y="620"/>
-      <p2 x="960" y="720"/>
     </wire>
     <wire>
       <p1 x="480" y="480"/>
       <p2 x="480" y="680"/>
     </wire>
     <wire>
-      <p1 x="900" y="420"/>
-      <p2 x="900" y="440"/>
-    </wire>
-    <wire>
-      <p1 x="900" y="440"/>
-      <p2 x="900" y="660"/>
-    </wire>
-    <wire>
       <p1 x="740" y="600"/>
       <p2 x="740" y="640"/>
     </wire>
     <wire>
-      <p1 x="740" y="480"/>
-      <p2 x="740" y="500"/>
-    </wire>
-    <wire>
-      <p1 x="580" y="500"/>
-      <p2 x="580" y="520"/>
+      <p1 x="900" y="440"/>
+      <p2 x="900" y="700"/>
     </wire>
     <wire>
       <p1 x="520" y="380"/>
@@ -763,7 +641,7 @@ end Behavioral;</string>
     </wire>
     <wire>
       <p1 x="520" y="620"/>
-      <p2 x="520" y="700"/>
+      <p2 x="520" y="720"/>
     </wire>
     <wire>
       <p1 x="460" y="360"/>
@@ -775,11 +653,7 @@ end Behavioral;</string>
     </wire>
     <wire>
       <p1 x="460" y="580"/>
-      <p2 x="460" y="720"/>
-    </wire>
-    <wire>
-      <p1 x="780" y="380"/>
-      <p2 x="780" y="540"/>
+      <p2 x="460" y="740"/>
     </wire>
     <wire>
       <p1 x="400" y="380"/>
@@ -798,56 +672,28 @@ end Behavioral;</string>
       <p2 x="500" y="580"/>
     </wire>
     <wire>
-      <p1 x="820" y="500"/>
-      <p2 x="820" y="560"/>
-    </wire>
-    <wire>
       <p1 x="440" y="640"/>
       <p2 x="440" y="800"/>
     </wire>
     <wire>
       <p1 x="760" y="480"/>
-      <p2 x="760" y="560"/>
-    </wire>
-    <wire>
-      <p1 x="760" y="560"/>
       <p2 x="760" y="580"/>
     </wire>
     <wire>
-      <p1 x="600" y="520"/>
-      <p2 x="600" y="540"/>
-    </wire>
-    <wire>
-      <p1 x="920" y="580"/>
-      <p2 x="920" y="600"/>
-    </wire>
-    <wire>
-      <p1 x="920" y="600"/>
-      <p2 x="920" y="680"/>
+      <p1 x="920" y="420"/>
+      <p2 x="920" y="440"/>
     </wire>
     <wire>
       <p1 x="540" y="520"/>
       <p2 x="540" y="600"/>
     </wire>
     <wire>
-      <p1 x="860" y="360"/>
-      <p2 x="860" y="380"/>
-    </wire>
-    <wire>
-      <p1 x="860" y="400"/>
-      <p2 x="860" y="460"/>
-    </wire>
-    <wire>
-      <p1 x="860" y="600"/>
-      <p2 x="860" y="720"/>
-    </wire>
-    <wire>
       <p1 x="700" y="580"/>
       <p2 x="700" y="620"/>
     </wire>
     <wire>
-      <p1 x="1020" y="560"/>
-      <p2 x="1020" y="580"/>
+      <p1 x="860" y="400"/>
+      <p2 x="860" y="500"/>
     </wire>
   </wires>
   <measurementOrdering/>
