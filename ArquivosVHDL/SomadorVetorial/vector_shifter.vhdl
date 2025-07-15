@@ -8,8 +8,8 @@ entity vector_shifter is
         B_i       : in  std_logic_vector(31 downto 0);  -- rs2 ou imediato
         mode_i    : in  std_logic;                      -- '0' = shift left, '1' = shift right
         vecSize_i : in  std_logic_vector(1 downto 0);   -- 00:4b, 01:8b, 10:16b, 11:32b
-        S_o       : out std_logic_vector(31 downto 0);
-	zero_out  : out std_logic
+        S_o       : out std_logic_vector(31 downto 0)
+	    
     );
 end vector_shifter;
 
@@ -18,7 +18,6 @@ architecture Behavioral of vector_shifter is
     signal result : std_logic_vector(31 downto 0);
     signal shamt  : std_logic_vector(4 downto 0);
     signal shamt_int : integer;
-    constant ALL_ZEROS_32 : std_logic_vector(31 downto 0) := (others => '0');
 
 begin
 
@@ -89,12 +88,7 @@ begin
         end case;
 
         S_o <= temp_result;
-	if temp_result = ALL_ZEROS_32 then
-            zero_out <= '1';
-        else
-            zero_out <= '0';
-        end if;
-
+			
     end process;
 
 end Behavioral;
