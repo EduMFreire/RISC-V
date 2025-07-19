@@ -1164,7 +1164,7 @@ end Behavioral;</string>
         </entry>
         <entry>
           <string>Data</string>
-          <data>1,1,8,7,6</data>
+          <data>4,5,6,7,8</data>
         </entry>
       </elementAttributes>
       <pos x="3340" y="440"/>
@@ -1278,10 +1278,9 @@ end Behavioral;</string>
         </entry>
         <entry>
           <string>Data</string>
-          <data>100093,0,0,102023,102023,9a503,2a583,a2a023,b9a023,198993,ff2999e3
-,6f,52583,50293,50613,62683,40b68733,1f75713,70363,68593,60293
-,160613,ff2619e3,8067,48*0,2083,c080e7,14*0,500113,a00193,3100b3
-,308233,4*0,2083,108093,102023,ffbff06f</data>
+          <data>2903,190913,100993,98513,30000e7,9a503,2a583,a2a023,b9a023,198993
+,ff2999e3,6f,52583,50293,50613,62683,40b68733,1f75713,70363,68593
+,60293,160613,ff2619e3,8067</data>
         </entry>
       </elementAttributes>
       <pos x="-500" y="160"/>
@@ -1398,10 +1397,6 @@ end Behavioral;</string>
           <string>Saída instruction do registrador IF/ID</string>
         </entry>
         <entry>
-          <string>rotation</string>
-          <rotation rotation="1"/>
-        </entry>
-        <entry>
           <string>Label</string>
           <string>Instruction Out</string>
         </entry>
@@ -1410,7 +1405,7 @@ end Behavioral;</string>
           <int>32</int>
         </entry>
       </elementAttributes>
-      <pos x="-40" y="360"/>
+      <pos x="-20" y="320"/>
     </visualElement>
     <visualElement>
       <elementName>Out</elementName>
@@ -4149,10 +4144,6 @@ end architecture behavioral;</string>
   </visualElements>
   <wires>
     <wire>
-      <p1 x="-40" y="360"/>
-      <p2 x="-120" y="400"/>
-    </wire>
-    <wire>
       <p1 x="800" y="0"/>
       <p2 x="1020" y="0"/>
     </wire>
@@ -4322,6 +4313,10 @@ end architecture behavioral;</string>
     </wire>
     <wire>
       <p1 x="-120" y="400"/>
+      <p2 x="-40" y="400"/>
+    </wire>
+    <wire>
+      <p1 x="-40" y="400"/>
       <p2 x="40" y="400"/>
     </wire>
     <wire>
@@ -4759,6 +4754,10 @@ end architecture behavioral;</string>
     <wire>
       <p1 x="1520" y="320"/>
       <p2 x="1540" y="320"/>
+    </wire>
+    <wire>
+      <p1 x="-40" y="320"/>
+      <p2 x="-20" y="320"/>
     </wire>
     <wire>
       <p1 x="-20" y="960"/>
@@ -5423,6 +5422,10 @@ end architecture behavioral;</string>
     <wire>
       <p1 x="-40" y="880"/>
       <p2 x="-40" y="980"/>
+    </wire>
+    <wire>
+      <p1 x="-40" y="320"/>
+      <p2 x="-40" y="400"/>
     </wire>
     <wire>
       <p1 x="1580" y="520"/>
