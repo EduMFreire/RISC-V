@@ -1164,7 +1164,7 @@ end Behavioral;</string>
         </entry>
         <entry>
           <string>Data</string>
-          <data>4,5,6,7,8</data>
+          <data>8*a</data>
         </entry>
       </elementAttributes>
       <pos x="3340" y="440"/>
@@ -1278,9 +1278,9 @@ end Behavioral;</string>
         </entry>
         <entry>
           <string>Data</string>
-          <data>2903,190913,100993,98513,30000e7,9a503,2a583,a2a023,b9a023,198993
-,ff2999e3,6f,52583,50293,50613,62683,40b68733,1f75713,70363,68593
-,60293,160613,ff2619e3,8067</data>
+          <data>1001d4,302123,14*0,2903,190913,100993,98513,30000e7,9a503,2a583
+,a2a023,b9a023,198993,ff2999e3,6f,52583,50293,50613,62683,40b68733
+,1f75713,70363,68593,60293,160613,ff2619e3,8067</data>
         </entry>
       </elementAttributes>
       <pos x="-500" y="160"/>
