@@ -104,10 +104,24 @@ begin
                 -- Assign the constructed immediate to the output.
                 immediate_o <= imm;
 
-            -- Default case: For unrecognized opcodes, output all zeros.
-            when others =>
-                imm := (others => '0');
+            -- VECTOR_I_OP*
+            when "1010100" | "1010101" | "1010110" =>
+                imm := (others => instruction_i(31));
+                imm(11 downto 0) := instruction_i(31 downto 20);
                 immediate_o <= imm;
+
+            -- VECTOR_U_OP*
+            when "1011000" | "1011001" | "1011010" =>
+                imm := instruction_i(31 downto 12) & (11 downto 0 => '0');
+                immediate_o <= imm;
+
+            -- VECTOR_R_OP*
+            when "1010000" | "1010001" | "1010010" =>
+                immediate_o <= (others => '0');
+
+            -- Default case
+            when others =>
+                immediate_o <= (others => '0');
         end case;
     end process;
 

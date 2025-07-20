@@ -529,10 +529,24 @@ begin
                 -- Assign the constructed immediate to the output.
                 immediate_o &lt;= imm;
 
-            -- Default case: For unrecognized opcodes, output all zeros.
-            when others =&gt;
-                imm := (others =&gt; &apos;0&apos;);
+            -- VECTOR_I_OP*
+            when &quot;1010100&quot; | &quot;1010101&quot; | &quot;1010110&quot; =&gt;
+                imm := (others =&gt; instruction_i(31));
+                imm(11 downto 0) := instruction_i(31 downto 20);
                 immediate_o &lt;= imm;
+
+            -- VECTOR_U_OP*
+            when &quot;1011000&quot; | &quot;1011001&quot; | &quot;1011010&quot; =&gt;
+                imm := instruction_i(31 downto 12) &amp; (11 downto 0 =&gt; &apos;0&apos;);
+                immediate_o &lt;= imm;
+
+            -- VECTOR_R_OP*
+            when &quot;1010000&quot; | &quot;1010001&quot; | &quot;1010010&quot; =&gt;
+                immediate_o &lt;= (others =&gt; &apos;0&apos;);
+
+            -- Default case
+            when others =&gt;
+                immediate_o &lt;= (others =&gt; &apos;0&apos;);
         end case;
     end process;
 
@@ -3474,6 +3488,16 @@ architecture Behavioral of HDU is
     constant LUI_OP      : std_logic_vector(6 downto 0) := &quot;0110111&quot;; -- LUI
     constant AUIPC_OP    : std_logic_vector(6 downto 0) := &quot;0010111&quot;; -- AUIPC
 
+    constant VECTOR_R_OP4B   : std_logic_vector(6 downto 0) := &quot;1010000&quot;;
+    constant VECTOR_R_OP8B   : std_logic_vector(6 downto 0) := &quot;1010001&quot;;
+    constant VECTOR_R_OP16B  : std_logic_vector(6 downto 0) := &quot;1010010&quot;;
+    constant VECTOR_I_OP4B   : std_logic_vector(6 downto 0) := &quot;1010100&quot;;
+    constant VECTOR_I_OP8B   : std_logic_vector(6 downto 0) := &quot;1010101&quot;;
+    constant VECTOR_I_OP16B  : std_logic_vector(6 downto 0) := &quot;1010110&quot;;
+    constant VECTOR_U_OP4B   : std_logic_vector(6 downto 0) := &quot;1011000&quot;;
+    constant VECTOR_U_OP8B   : std_logic_vector(6 downto 0) := &quot;1011001&quot;;
+    constant VECTOR_U_OP16B  : std_logic_vector(6 downto 0) := &quot;1011010&quot;;
+
 begin
 
 process(rs1, rs2, opcode, jump, rd_IDEX, memRead_IDEX, regWrite_IDEX, rd_EXMEM, memRead_EXMEM)
@@ -3499,11 +3523,11 @@ process(rs1, rs2, opcode, jump, rd_IDEX, memRead_IDEX, regWrite_IDEX, rd_EXMEM, 
 begin
     -- Identificar se a instução em ID é tipo 1, 2, ou 3
     case opcode is
-        when JAL_OP | LUI_OP | AUIPC_OP =&gt;
+        when JAL_OP | LUI_OP | AUIPC_OP | VECTOR_U_OP4B | VECTOR_U_OP8B | VECTOR_U_OP16B =&gt;
             inst_type := 1;
-        when I_TYPE_OP | L_TYPE_OP | S_TYPE_OP =&gt;
+        when I_TYPE_OP | L_TYPE_OP | S_TYPE_OP | VECTOR_I_OP4B | VECTOR_I_OP8B | VECTOR_I_OP16B =&gt;
             inst_type := 2;
-        when R_TYPE_OP =&gt;
+        when R_TYPE_OP | VECTOR_R_OP4B | VECTOR_R_OP8B | VECTOR_R_OP16B =&gt;
             inst_type := 3;
         when JALR_OP =&gt;
             inst_type := 4;

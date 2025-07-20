@@ -44,6 +44,16 @@ architecture Behavioral of HDU is
     constant LUI_OP      : std_logic_vector(6 downto 0) := "0110111"; -- LUI
     constant AUIPC_OP    : std_logic_vector(6 downto 0) := "0010111"; -- AUIPC
 
+    constant VECTOR_R_OP4B   : std_logic_vector(6 downto 0) := "1010000";
+    constant VECTOR_R_OP8B   : std_logic_vector(6 downto 0) := "1010001";
+    constant VECTOR_R_OP16B  : std_logic_vector(6 downto 0) := "1010010";
+    constant VECTOR_I_OP4B   : std_logic_vector(6 downto 0) := "1010100";
+    constant VECTOR_I_OP8B   : std_logic_vector(6 downto 0) := "1010101";
+    constant VECTOR_I_OP16B  : std_logic_vector(6 downto 0) := "1010110";
+    constant VECTOR_U_OP4B   : std_logic_vector(6 downto 0) := "1011000";
+    constant VECTOR_U_OP8B   : std_logic_vector(6 downto 0) := "1011001";
+    constant VECTOR_U_OP16B  : std_logic_vector(6 downto 0) := "1011010";
+
 begin
 
 process(rs1, rs2, opcode, jump, rd_IDEX, memRead_IDEX, regWrite_IDEX, rd_EXMEM, memRead_EXMEM)
@@ -69,11 +79,11 @@ process(rs1, rs2, opcode, jump, rd_IDEX, memRead_IDEX, regWrite_IDEX, rd_EXMEM, 
 begin
     -- Identificar se a instução em ID é tipo 1, 2, ou 3
     case opcode is
-        when JAL_OP | LUI_OP | AUIPC_OP =>
+        when JAL_OP | LUI_OP | AUIPC_OP | VECTOR_U_OP4B | VECTOR_U_OP8B | VECTOR_U_OP16B =>
             inst_type := 1;
-        when I_TYPE_OP | L_TYPE_OP | S_TYPE_OP =>
+        when I_TYPE_OP | L_TYPE_OP | S_TYPE_OP | VECTOR_I_OP4B | VECTOR_I_OP8B | VECTOR_I_OP16B =>
             inst_type := 2;
-        when R_TYPE_OP =>
+        when R_TYPE_OP | VECTOR_R_OP4B | VECTOR_R_OP8B | VECTOR_R_OP16B =>
             inst_type := 3;
         when JALR_OP =>
             inst_type := 4;
