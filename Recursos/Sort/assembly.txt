@@ -1,24 +1,41 @@
-lw x18, 0(x0)
-addi x18, x18, 1
-addi x19, x0, 1
-    addi x10, x19, 0
-    jalr x1, 48(x0)
-    lw x10, 0(x19)
-    lw x11, 0(x5)
-    sw x10, 0(x5)
-    sw x11, 0(x19)
-    addi x19, x19, 1
-    bne x19, x18, -14
-jal x0, 0
+# main:
+    # Carregar o tamanho n do vetor e calcular n+1, usado como limite de repetições
+    lw x18, 0(x0)
+    addi x18, x18, 1
+    # Inicializar o loop "for"
+    addi x19, x0, 1
+        # Escrever o parâmetro e chamar min_idx
+        addi x10, x19, 0
+        jalr x1, 48(x0)
+        # Fazer o swap
+        lw x10, 0(x19)
+        lw x11, 0(x5)
+        sw x10, 0(x5)
+        sw x11, 0(x19)
+        # Checar se já terminamos de ordenar
+        addi x19, x19, 1
+        bne x19, x18, -14
+    # Ao fim da execução, a CPU fica presa nesta instrução jal
+    jal x0, 0
+# min_idx:
+    # Recebe em x10 o endereço a partir do qual percorrer
+    # Retorna em x5 o índice do valor mínimo do vetor a partir desse endereço
+
+    # x11 é o mínimo até agora
+    # x5 é seu índice
+    # x12 é o iterador do "for"
     lw x11, 0(x10)
     addi x5, x10, 0
     addi x12, x10, 0
         lw x13, 0(x12)
+        # Checar se o valor em questão é menor que o mínimo até agora
         sub x14, x13, x11
         srli x14, x14, 31
         beq x14, x0, 6
             addi x11, x13, 0
             addi x5, x12, 0
+        # Checar se já terminamos de percorrer o vetor
         addi x12, x12, 1
         bne x12, x18, -14
+    # Retornar
     jalr x0, 0(x1)
